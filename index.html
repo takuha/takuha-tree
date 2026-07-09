@@ -87,14 +87,18 @@
   .cell .more{font-size:8px;color:var(--mut);font-weight:800;padding-left:3px}
   .cell .rt{position:absolute;right:3px;top:3px;font-size:8px;font-weight:800;color:var(--mut)}
   .mhint{font-size:10.5px;color:var(--mut);text-align:center;margin-top:10px}
-  /* ===== color legend (集約) ===== */
-  .legendcard{background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:10px 12px 12px;margin-bottom:12px}
-  .lg-title{font-size:12.5px;font-weight:800;color:var(--gt-d);margin-bottom:8px}
-  .lg-sub{font-size:9.5px;font-weight:800;color:var(--mut);letter-spacing:.5px;margin:6px 0 5px}
-  .lg-row{display:flex;flex-wrap:wrap;gap:5px}
-  .lgchip{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:800;
-    padding:3px 9px;border-radius:20px;color:#fff;line-height:1.2;white-space:nowrap}
+  /* ===== color legend (集約・畳める・コンパクト) ===== */
+  .legendcard{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:8px 11px;margin-bottom:10px}
+  .lg-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+  .lg-title{font-size:12px;font-weight:800;color:var(--gt-d)}
+  .lg-caret{font-size:11px;color:var(--mut);font-weight:800}
+  .lg-body{margin-top:8px}
+  .lg-body.hide{display:none}
+  .lg-sub{font-size:9px;font-weight:800;color:var(--mut);letter-spacing:.5px;margin:5px 0 4px}
+  .lg-row{display:flex;flex-wrap:wrap;gap:4px}
+  .lgchip{display:inline-flex;align-items:center;gap:2px;font-size:9.5px;font-weight:800;
+    padding:2px 7px;border-radius:20px;color:#fff;line-height:1.25;white-space:nowrap}
   .lgchip.ghost{background:transparent;border:1px dashed}
 
   /* ===== day view ===== */
@@ -249,13 +253,18 @@
       <button onclick="shiftMonth(1)">›</button>
     </div>
 
-    <!-- ===== 色分けラベル（1か所に集約） ===== -->
+    <!-- ===== 色分けラベル（1か所に集約・畳める） ===== -->
     <div class="legendcard">
-      <div class="lg-title">🎨 色でわかる予定</div>
-      <div class="lg-sub">いつもの予定</div>
-      <div class="lg-row" id="lgRoutine"></div>
-      <div class="lg-sub">予定の種類</div>
-      <div class="lg-row" id="lgCats"></div>
+      <div class="lg-head" onclick="toggleLegend()">
+        <span class="lg-title">🎨 色でわかる予定</span>
+        <span class="lg-caret" id="lgCaret">▸</span>
+      </div>
+      <div class="lg-body" id="lgBody">
+        <div class="lg-sub">いつもの予定</div>
+        <div class="lg-row" id="lgRoutine"></div>
+        <div class="lg-sub">予定の種類</div>
+        <div class="lg-row" id="lgCats"></div>
+      </div>
     </div>
 
     <div class="wd" id="wdRow"></div>
@@ -563,7 +572,12 @@ function renderLegend(){
   const lc=document.getElementById('lgCats');
   if(lc)lc.innerHTML=keys.map(k=>{const c=catOf(k);
     return `<span class="lgchip" style="background:${c.bar}">${c.e}${c.n}</span>`;}).join('');
+  applyLegendOpen();
 }
+let legendOpen=(localStorage.getItem('tree_legendOpen')||'0')==='1';
+function applyLegendOpen(){const b=document.getElementById('lgBody'),c=document.getElementById('lgCaret');
+  if(b)b.classList.toggle('hide',!legendOpen);if(c)c.textContent=legendOpen?'▾':'▸';}
+function toggleLegend(){legendOpen=!legendOpen;localStorage.setItem('tree_legendOpen',legendOpen?'1':'0');applyLegendOpen();}
 function openDay(ds){SEL=ds;showView('day');}
 function toggleRoutine(){showRoutine=!showRoutine;localStorage.setItem('tree_showRoutine',showRoutine?'1':'0');
   const t=document.getElementById('rtToggle');if(t)t.textContent='いつもの予定：'+(showRoutine?'ON':'OFF');
