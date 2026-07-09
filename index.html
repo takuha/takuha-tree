@@ -380,6 +380,18 @@ if(!DB.appts)DB.appts={};if(!DB.events)DB.events={};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+/* ===== seed: 実際の予定を1回だけ端末に投入（重複防止・以後は普通に編集/削除可） ===== */
+const SEED=[
+  {date:'2026-07-04', ev:{id:20260704060,title:'🏖️ モンテリコ旅行（往路・アンティグア発）',gt:6*60,dur:4*60,cat:'play'}},
+  {date:'2026-07-05', ev:{id:20260705160,title:'🚗 モンテリコ→アンティグア（復路）',gt:16*60,dur:3*60,cat:'play'}},
+];
+(function seed(){
+  if(localStorage.getItem('tree_seed_v2_monterrico')==='1')return;
+  SEED.forEach(s=>{DB.events[s.date]=DB.events[s.date]||[];
+    if(!DB.events[s.date].some(e=>e.id===s.ev.id))DB.events[s.date].push(s.ev);});
+  save();localStorage.setItem('tree_seed_v2_monterrico','1');
+})();
+
 /* ===== date helpers ===== */
 function todayStr(){const g=nowParts(-6);return g.getFullYear()+'-'+pad(g.getMonth()+1)+'-'+pad(g.getDate());}
 function dow(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).getDay();}
