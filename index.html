@@ -79,9 +79,11 @@
   .cell.today .dn{background:var(--gt);color:#06241c;border-radius:6px;align-self:flex-start;padding:1px 6px}
   .cell.sel{background:#1c2748;border-color:var(--gt-d)}
   .cell .bars{display:flex;flex-direction:column;gap:2px;overflow:hidden}
-  .bar{font-size:8.5px;font-weight:700;line-height:1.25;border-radius:4px;padding:1px 4px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+  .bar{font-size:8.5px;font-weight:700;line-height:1.25;border-radius:4px;padding:1px 3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;letter-spacing:-.3px}
   .bar.apo{outline:1px solid rgba(255,255,255,.25)}
+  .rbar{font-size:8px;font-weight:800;line-height:1.3;border-radius:4px;padding:1px 3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px dashed;letter-spacing:-.3px}
   .cell .more{font-size:8px;color:var(--mut);font-weight:800;padding-left:3px}
   .cell .rt{position:absolute;right:3px;top:3px;font-size:8px;font-weight:800;color:var(--mut)}
   .mhint{font-size:10.5px;color:var(--mut);text-align:center;margin-top:10px}
@@ -243,7 +245,7 @@
     <div class="mcal-mask" id="mMask">
       <div class="mgrid" id="mGrid"></div>
     </div>
-    <div class="mhint">← Desliza para cambiar de mes ／ 横スワイプで月移動　·　Toca un día → detalle ／ 日付タップで詳細</div>
+    <div class="mhint">← 横スワイプで月移動　·　日付タップで詳細　·　<span id="rtToggle" onclick="toggleRoutine()" style="color:var(--gt-d);font-weight:800;text-decoration:underline;cursor:pointer">いつもの予定：ON</span></div>
     <div class="legendrow" id="legendRow"></div>
   </div>
 
@@ -382,6 +384,13 @@ const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"
 function todayStr(){const g=nowParts(-6);return g.getFullYear()+'-'+pad(g.getMonth()+1)+'-'+pad(g.getDate());}
 function dow(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).getDay();}
 function dayType(s){const w=dow(s);if(w===0||w===6)return'W';if(w===2)return'B';return'A';}
+/* いつものスケジュール(曜日タイプ)を月セルに出す用の要約チップ */
+function routineChip(type){
+  if(type==='W')return{t:'🎉遊び',c:'#f0a8c4',bg:'rgba(240,144,184,.14)',bd:'rgba(240,144,184,.45)'};
+  if(type==='B')return{t:'📚自習',c:'#9dc1f0',bg:'rgba(127,176,240,.13)',bd:'rgba(127,176,240,.42)'};
+  return{t:'🇪🇸授業',c:'#7fe0c2',bg:'rgba(43,179,140,.14)',bd:'rgba(43,179,140,.45)'};
+}
+let showRoutine=(localStorage.getItem('tree_showRoutine')||'1')==='1';
 function addDays(s,n){const[y,m,d]=s.split('-').map(Number);const dt=new Date(y,m-1,d);dt.setDate(dt.getDate()+n);
   return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());}
 let SEL=todayStr();
@@ -487,6 +496,7 @@ function eventsForBars(ds){
 function renderMonth(dir){
   document.getElementById('wdRow').innerHTML=WK.map((w,i)=>`<span class="s${i}">${w[0]}${WKJ[i]}</span>`).join('');
   document.getElementById('mLabel').textContent=(mYM.m+1)+' / '+mYM.y;
+  {const t=document.getElementById('rtToggle');if(t)t.textContent='いつもの予定：'+(showRoutine?'ON':'OFF');}
   const first=new Date(mYM.y,mYM.m,1).getDay();
   const days=new Date(mYM.y,mYM.m+1,0).getDate();
   const today=todayStr();
@@ -499,10 +509,14 @@ function renderMonth(dir){
     if(ds===today)cls+=' today';
     if(ds===SEL)cls+=' sel';
     const evs=eventsForBars(ds);
-    let bars='';const shown=evs.slice(0,3);
+    let bars='';
+    if(showRoutine){const rc=routineChip(dayType(ds));
+      bars+=`<div class="rbar" style="color:${rc.c};background:${rc.bg};border-color:${rc.bd}">${rc.t}</div>`;}
+    const slots=showRoutine?2:3;
+    const shown=evs.slice(0,slots);
     shown.forEach(e=>{const c=catOf(e.cat);
       bars+=`<div class="bar${e.apo?' apo':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</div>`;});
-    const more=evs.length>3?`<div class="more">+${evs.length-3}</div>`:'';
+    const more=evs.length>slots?`<div class="more">+${evs.length-slots}</div>`:'';
     h+=`<div class="${cls}" onclick="openDay('${ds}')">
       <div class="dn">${d}</div>
       <div class="bars">${bars}${more}</div></div>`;
@@ -516,6 +530,9 @@ function renderMonth(dir){
     return `<span style="background:${c.bar};color:#fff">${c.e}${c.n}</span>`;}).join('');
 }
 function openDay(ds){SEL=ds;showView('day');}
+function toggleRoutine(){showRoutine=!showRoutine;localStorage.setItem('tree_showRoutine',showRoutine?'1':'0');
+  const t=document.getElementById('rtToggle');if(t)t.textContent='いつもの予定：'+(showRoutine?'ON':'OFF');
+  renderMonth();}
 
 /* ===== DAY ===== */
 function shiftDay(n){SEL=addDays(SEL,n);const t=SEL.split('-');mYM={y:+t[0],m:+t[1]-1};renderDay(n>0?'L':'R');}
