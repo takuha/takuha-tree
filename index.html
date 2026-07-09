@@ -87,8 +87,15 @@
   .cell .more{font-size:8px;color:var(--mut);font-weight:800;padding-left:3px}
   .cell .rt{position:absolute;right:3px;top:3px;font-size:8px;font-weight:800;color:var(--mut)}
   .mhint{font-size:10.5px;color:var(--mut);text-align:center;margin-top:10px}
-  .legendrow{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px;justify-content:center}
-  .legendrow span{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:20px}
+  /* ===== color legend (集約) ===== */
+  .legendcard{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:10px 12px 12px;margin-bottom:12px}
+  .lg-title{font-size:12.5px;font-weight:800;color:var(--gt-d);margin-bottom:8px}
+  .lg-sub{font-size:9.5px;font-weight:800;color:var(--mut);letter-spacing:.5px;margin:6px 0 5px}
+  .lg-row{display:flex;flex-wrap:wrap;gap:5px}
+  .lgchip{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:800;
+    padding:3px 9px;border-radius:20px;color:#fff;line-height:1.2;white-space:nowrap}
+  .lgchip.ghost{background:transparent;border:1px dashed}
 
   /* ===== day view ===== */
   .daybar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
@@ -241,12 +248,21 @@
       <button class="today-btn" onclick="goToday()">Hoy 今日</button>
       <button onclick="shiftMonth(1)">›</button>
     </div>
+
+    <!-- ===== 色分けラベル（1か所に集約） ===== -->
+    <div class="legendcard">
+      <div class="lg-title">🎨 色でわかる予定</div>
+      <div class="lg-sub">いつもの予定</div>
+      <div class="lg-row" id="lgRoutine"></div>
+      <div class="lg-sub">予定の種類</div>
+      <div class="lg-row" id="lgCats"></div>
+    </div>
+
     <div class="wd" id="wdRow"></div>
     <div class="mcal-mask" id="mMask">
       <div class="mgrid" id="mGrid"></div>
     </div>
     <div class="mhint">← 横スワイプで月移動　·　日付タップで詳細　·　<span id="rtToggle" onclick="toggleRoutine()" style="color:var(--gt-d);font-weight:800;text-decoration:underline;cursor:pointer">いつもの予定：ON</span></div>
-    <div class="legendrow" id="legendRow"></div>
   </div>
 
   <!-- ===== VIEW: DAY ===== -->
@@ -398,9 +414,9 @@ function dow(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d).g
 function dayType(s){const w=dow(s);if(w===0||w===6)return'W';if(w===2)return'B';return'A';}
 /* いつものスケジュール(曜日タイプ)を月セルに出す用の要約チップ */
 function routineChip(type){
-  if(type==='W')return{t:'🎉遊び',c:'#f0a8c4',bg:'rgba(240,144,184,.14)',bd:'rgba(240,144,184,.45)'};
-  if(type==='B')return{t:'📚自習',c:'#9dc1f0',bg:'rgba(127,176,240,.13)',bd:'rgba(127,176,240,.42)'};
-  return{t:'🇪🇸授業',c:'#7fe0c2',bg:'rgba(43,179,140,.14)',bd:'rgba(43,179,140,.45)'};
+  if(type==='W')return{t:'🎉遊び',c:'#ff9d8a',bg:'rgba(208,80,77,.16)',bd:'rgba(208,80,77,.5)'};
+  if(type==='B')return{t:'📚自習',c:'#6fc0f0',bg:'rgba(47,127,192,.16)',bd:'rgba(47,127,192,.5)'};
+  return{t:'🇪🇸授業',c:'#7fe6c4',bg:'rgba(21,159,118,.16)',bd:'rgba(21,159,118,.5)'};
 }
 let showRoutine=(localStorage.getItem('tree_showRoutine')||'1')==='1';
 function addDays(s,n){const[y,m,d]=s.split('-').map(Number);const dt=new Date(y,m-1,d);dt.setDate(dt.getDate()+n);
@@ -408,21 +424,21 @@ function addDays(s,n){const[y,m,d]=s.split('-').map(Number);const dt=new Date(y,
 let SEL=todayStr();
 let mYM=(function(){const t=todayStr().split('-');return{y:+t[0],m:+t[1]-1};})();
 
-/* ===== categories ===== */
+/* ===== categories（全部くっきり別色） ===== */
 const CAT={
-  fix  :{e:'',  n:'Fijo／絶対',       c:'#5dd6b0',bar:'#1f6b56'},
-  apo  :{e:'🤝',n:'Cita／アポ',       c:'#e0a93b',bar:'#a8761c'},
-  ai   :{e:'🤖',n:'AI作業',           c:'#9d97ff',bar:'#5b52c9'},
-  free :{e:'🆓',n:'フリー',           c:'#b8b2a4',bar:'#6b675c'},
-  film :{e:'🎬',n:'撮影編集',         c:'#f0a07e',bar:'#a8532f'},
-  study:{e:'📚',n:'勉強',             c:'#8fb8f0',bar:'#2f5f9e'},
-  talk :{e:'🗣️',n:'会話',             c:'#f0a0c4',bar:'#9e3d68'},
-  train:{e:'💪',n:'トレ',             c:'#a8d67e',bar:'#4d7a1f'},
-  sns  :{e:'📣',n:'発信',             c:'#e0b83b',bar:'#9e7a1c'},
-  work :{e:'💼',n:'日本仕事',         c:'#7fb0f0',bar:'#2f5f9e'},
-  meal :{e:'🍴',n:'ごはん',           c:'#d6c07e',bar:'#7a6a2f'},
-  play :{e:'🎉',n:'遊び',             c:'#f090b8',bar:'#9e3d68'},
-  self :{e:'🪞',n:'内省',             c:'#b8b2a4',bar:'#6b675c'},
+  fix  :{e:'🇪🇸',n:'授業／絶対',   c:'#7fe6c4',bar:'#159f76'},
+  apo  :{e:'🤝',n:'アポ',         c:'#ffcf5c',bar:'#c9971c'},
+  work :{e:'💼',n:'日本仕事',     c:'#8fa2ff',bar:'#3b4fc0'},
+  study:{e:'📚',n:'勉強・自習',   c:'#6fc0f0',bar:'#2f7fc0'},
+  talk :{e:'🗣️',n:'会話',         c:'#ff9ec9',bar:'#c0417a'},
+  play :{e:'🎉',n:'遊び',         c:'#ff8f7a',bar:'#d0504d'},
+  ai   :{e:'🤖',n:'AI作業',       c:'#b39cff',bar:'#6a4fd0'},
+  film :{e:'🎬',n:'撮影編集',     c:'#ff9e6e',bar:'#c05a2e'},
+  sns  :{e:'📣',n:'発信',         c:'#ffb84d',bar:'#d07a1c'},
+  train:{e:'💪',n:'トレ',         c:'#a6de6a',bar:'#5a9a2a'},
+  meal :{e:'🍴',n:'ごはん',       c:'#d8b98a',bar:'#8a6a42'},
+  free :{e:'🆓',n:'フリー',       c:'#c2c8d0',bar:'#6b7280'},
+  self :{e:'🪞',n:'内省',         c:'#9bb4d6',bar:'#5a7a9a'},
 };
 const catOf=k=>CAT[k]||CAT.free;
 
@@ -536,10 +552,17 @@ function renderMonth(dir){
   const g=document.getElementById('mGrid');
   g.innerHTML=h;
   if(dir){g.classList.remove('slideL','slideR');void g.offsetWidth;g.classList.add(dir==='L'?'slideL':'slideR');}
-  // legend
-  const keys=['sns','study','film','talk','play','meal','work','ai','train','apo'];
-  document.getElementById('legendRow').innerHTML=keys.map(k=>{const c=catOf(k);
-    return `<span style="background:${c.bar};color:#fff">${c.e}${c.n}</span>`;}).join('');
+}
+/* ===== 色分けラベル（1か所に集約・静的） ===== */
+function renderLegend(){
+  const rmap=[['A','🇪🇸 授業（月水木金）'],['B','📚 自習（火）'],['W','🎉 遊び（土日）']];
+  const lr=document.getElementById('lgRoutine');
+  if(lr)lr.innerHTML=rmap.map(([ty,label])=>{const c=routineChip(ty);
+    return `<span class="lgchip ghost" style="color:${c.c};background:${c.bg};border-color:${c.bd}">${label}</span>`;}).join('');
+  const keys=['apo','work','talk','study','ai','film','sns','train','meal','free','self'];
+  const lc=document.getElementById('lgCats');
+  if(lc)lc.innerHTML=keys.map(k=>{const c=catOf(k);
+    return `<span class="lgchip" style="background:${c.bar}">${c.e}${c.n}</span>`;}).join('');
 }
 function openDay(ds){SEL=ds;showView('day');}
 function toggleRoutine(){showRoutine=!showRoutine;localStorage.setItem('tree_showRoutine',showRoutine?'1':'0');
@@ -754,7 +777,7 @@ addSwipe(document.getElementById('dMask'),()=>shiftDay(1),()=>shiftDay(-1));
 });
 
 /* ===== init ===== */
-renderChips();runConv();renderMonth();renderDay();
+renderLegend();renderChips();runConv();renderMonth();renderDay();
 setInterval(()=>{if(curView==='day')renderTimeline();},60000);
 </script>
 </body>
