@@ -78,7 +78,13 @@
   .cell.today{border-color:var(--gt);box-shadow:0 0 0 1px var(--gt) inset}
   .cell.today .dn{background:var(--gt);color:#06241c;border-radius:6px;align-self:flex-start;padding:1px 6px}
   .cell.sel{background:#1c2748;border-color:var(--gt-d)}
-  .cell .bars{display:flex;flex-direction:column;gap:2px;overflow:hidden}
+  .cell .bars{display:flex;flex-direction:column;gap:2px;overflow:visible}
+  /* 期間予定（タイムツリー風・日をまたいで繋がる帯） */
+  .spanbar{font-size:8.5px;font-weight:800;line-height:1.35;padding:1.5px 3px;color:#fff;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.3px;
+    margin-left:-5px;margin-right:-5px;border-radius:0}
+  .spanbar.st{margin-left:0;border-top-left-radius:5px;border-bottom-left-radius:5px}
+  .spanbar.en{margin-right:0;border-top-right-radius:5px;border-bottom-right-radius:5px}
   .bar{font-size:8.5px;font-weight:700;line-height:1.25;border-radius:4px;padding:1px 3px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;letter-spacing:-.3px}
   .bar.apo{outline:1px solid rgba(255,255,255,.25)}
@@ -405,17 +411,12 @@ if(!DB.appts)DB.appts={};if(!DB.events)DB.events={};
 const save=()=>localStorage.setItem(KEY,JSON.stringify(DB));
 const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* ===== seed: 実際の予定を1回だけ端末に投入（重複防止・以後は普通に編集/削除可） ===== */
-const SEED=[
-  {date:'2026-07-04', ev:{id:20260704060,title:'🏖️ モンテリコ旅行（往路・アンティグア発）',gt:6*60,dur:4*60,cat:'play'}},
-  {date:'2026-07-05', ev:{id:20260705160,title:'🚗 モンテリコ→アンティグア（復路）',gt:16*60,dur:3*60,cat:'play'}},
-];
-(function seed(){
-  if(localStorage.getItem('tree_seed_v2_monterrico')==='1')return;
-  SEED.forEach(s=>{DB.events[s.date]=DB.events[s.date]||[];
-    if(!DB.events[s.date].some(e=>e.id===s.ev.id))DB.events[s.date].push(s.ev);});
-  save();localStorage.setItem('tree_seed_v2_monterrico','1');
-})();
+/* ===== 期間予定（タイムツリー風の帯）＝ DBに保持。書出/読込で端末間を持ち運べる =====
+   形式: DB.ranges = [{id, start:'YYYY-MM-DD', end:'YYYY-MM-DD', title, cat}]
+   ※予定データはこのファイルには持たない（端末のローカル保存のみ） */
+if(!DB.ranges)DB.ranges=[];
+/* その日にかかっている期間予定を返す */
+function rangesFor(ds){return (DB.ranges||[]).filter(r=>ds>=r.start&&ds<=r.end);}
 
 /* ===== date helpers ===== */
 function todayStr(){const g=nowParts(-6);return g.getFullYear()+'-'+pad(g.getMonth()+1)+'-'+pad(g.getDate());}
@@ -547,9 +548,15 @@ function renderMonth(dir){
     if(ds===SEL)cls+=' sel';
     const evs=eventsForBars(ds);
     let bars='';
+    /* 期間予定の帯：開始/終了だけ角丸、途中はセル端まで伸ばして繋げる */
+    const rgs=rangesFor(ds);
+    rgs.forEach(r=>{const c=catOf(r.cat);
+      const st=ds===r.start,en=ds===r.end;
+      const label=(st||w===0||d===1)?esc(r.title):'&nbsp;';
+      bars+=`<div class="spanbar${st?' st':''}${en?' en':''}" style="background:${c.bar}">${label}</div>`;});
     if(showRoutine){const rc=routineChip(dayType(ds));
       bars+=`<div class="rbar" style="color:${rc.c};background:${rc.bg};border-color:${rc.bd}">${rc.t}</div>`;}
-    const slots=showRoutine?2:3;
+    const slots=Math.max(1,(showRoutine?2:3)-rgs.length);
     const shown=evs.slice(0,slots);
     shown.forEach(e=>{const c=catOf(e.cat);
       bars+=`<div class="bar${e.apo?' apo':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</div>`;});
@@ -758,7 +765,7 @@ document.getElementById('convTz').addEventListener('change',runConv);
 function exportData(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='takuha_tree_backup.json';a.click();}
 function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{try{const d=JSON.parse(r.result);DB=d;if(!DB.appts)DB.appts={};if(!DB.events)DB.events={};
+  r.onload=()=>{try{const d=JSON.parse(r.result);DB=d;if(!DB.appts)DB.appts={};if(!DB.events)DB.events={};if(!DB.ranges)DB.ranges=[];
     save();refresh();alert('読み込みました ／ Importado');}catch(_){alert('読み込めませんでした ／ Error');}};
   r.readAsText(f);}
 
