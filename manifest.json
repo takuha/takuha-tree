@@ -1,16 +1,35 @@
 {
+  "id": "./",
   "name": "TAKUHA tree",
   "short_name": "TAKUHA tree",
   "description": "予定・時差対応カレンダー（🇬🇹⇄🇯🇵 15h）",
+  "lang": "ja",
+  "dir": "ltr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#0b0f1a",
-  "theme_color": "#0f5e4e",
+  "background_color": "#0a0e17",
+  "theme_color": "#12775f",
+  "categories": ["productivity", "lifestyle"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "今日の時間割",
+      "short_name": "今日",
+      "url": "./?v=day",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "改善スタジオ",
+      "short_name": "Studio",
+      "url": "./studio/",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

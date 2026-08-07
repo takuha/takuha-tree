@@ -1,0 +1,96 @@
+/* ============================================================
+   TAKUHA tree — design tokens & base
+   本体と改善スタジオが共有する。色を変えるならここ1か所。
+   ============================================================ */
+/* ============================================================
+   design tokens
+   ============================================================ */
+:root{
+  /* dark = default */
+  --bg:#0a0e17; --surface:#141b2c; --surface-2:#1b2439; --surface-3:#222c45;
+  --line:#25304a; --line-soft:#1d2740;
+  --ink:#e9eefc; --ink-2:#b6c1da; --mut:#7c89a9;
+  --brand:#22b085; --brand-ink:#5ee0b4; --brand-on:#04241c; --brand-deep:#0d4f42;
+  --jp:#ff8a8a; --sun:#ff9a9a; --sat:#84b8ff;
+  --warn-ink:#e8c98a; --warn-bg:#33290f; --warn-line:#c99a2e;
+  --ok-bg:#0f3a2e;
+  --shadow-s:0 2px 8px rgba(0,0,0,.28);
+  --shadow-m:0 10px 28px rgba(0,0,0,.38);
+  --shadow-l:0 -8px 32px rgba(0,0,0,.45);
+  --scrim:rgba(4,7,13,.66);
+  --nav-bg:rgba(14,20,34,.82);
+  --rt-a-ink:#7fe6c4; --rt-a-bg:rgba(21,159,118,.18); --rt-a-bd:rgba(21,159,118,.55);
+  --rt-b-ink:#6fc0f0; --rt-b-bg:rgba(47,127,192,.18); --rt-b-bd:rgba(47,127,192,.55);
+  --rt-w-ink:#ff9d8a; --rt-w-bg:rgba(208,80,77,.18); --rt-w-bd:rgba(208,80,77,.55);
+
+  /* scale */
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px; --r-full:999px;
+  --nav-h:66px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-t:env(safe-area-inset-top,0px);
+  --ease:cubic-bezier(.22,.61,.36,1);
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f5f7fb; --surface:#ffffff; --surface-2:#eef2f9; --surface-3:#e4eaf4;
+  --line:#dce3ef; --line-soft:#e9eef6;
+  --ink:#0f172a; --ink-2:#3d4a63; --mut:#6b7891;
+  --brand:#0f8f6c; --brand-ink:#0a7053; --brand-on:#ffffff; --brand-deep:#0b6b50;
+  --jp:#cf4055; --sun:#cf4055; --sat:#2563eb;
+  --warn-ink:#8a6410; --warn-bg:#fdf3d8; --warn-line:#d9a520;
+  --ok-bg:#e2f5ee;
+  --shadow-s:0 1px 3px rgba(16,24,40,.07);
+  --shadow-m:0 8px 24px rgba(16,24,40,.10);
+  --shadow-l:0 -8px 32px rgba(16,24,40,.14);
+  --scrim:rgba(15,23,42,.42);
+  --nav-bg:rgba(255,255,255,.86);
+  --rt-a-ink:#0b6b50; --rt-a-bg:rgba(21,159,118,.13); --rt-a-bd:rgba(21,159,118,.45);
+  --rt-b-ink:#1d5c8f; --rt-b-bg:rgba(47,127,192,.13); --rt-b-bd:rgba(47,127,192,.45);
+  --rt-w-ink:#a63c39; --rt-w-bg:rgba(208,80,77,.13); --rt-w-bd:rgba(208,80,77,.45);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    --bg:#f5f7fb; --surface:#ffffff; --surface-2:#eef2f9; --surface-3:#e4eaf4;
+    --line:#dce3ef; --line-soft:#e9eef6;
+    --ink:#0f172a; --ink-2:#3d4a63; --mut:#6b7891;
+    --brand:#0f8f6c; --brand-ink:#0a7053; --brand-on:#ffffff; --brand-deep:#0b6b50;
+    --jp:#cf4055; --sun:#cf4055; --sat:#2563eb;
+    --warn-ink:#8a6410; --warn-bg:#fdf3d8; --warn-line:#d9a520;
+    --ok-bg:#e2f5ee;
+    --shadow-s:0 1px 3px rgba(16,24,40,.07);
+    --shadow-m:0 8px 24px rgba(16,24,40,.10);
+    --shadow-l:0 -8px 32px rgba(16,24,40,.14);
+    --scrim:rgba(15,23,42,.42);
+    --nav-bg:rgba(255,255,255,.86);
+    --rt-a-ink:#0b6b50; --rt-a-bg:rgba(21,159,118,.13); --rt-a-bd:rgba(21,159,118,.45);
+    --rt-b-ink:#1d5c8f; --rt-b-bg:rgba(47,127,192,.13); --rt-b-bd:rgba(47,127,192,.45);
+    --rt-w-ink:#a63c39; --rt-w-bg:rgba(208,80,77,.13); --rt-w-bd:rgba(208,80,77,.45);
+    color-scheme:light;
+  }
+}
+
+/* ============================================================
+   base
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:system-ui,-apple-system,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Noto Sans JP",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.55;
+  font-size:15px;font-feature-settings:"palt" 1;
+  overscroll-behavior-y:none;-webkit-user-select:none;user-select:none;
+  transition:background .25s var(--ease),color .25s var(--ease);
+}
+button,input,select,textarea{font-family:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+/* 16px floor stops iOS from zooming on focus — lets us keep pinch-zoom enabled */
+input,select,textarea{font-size:16px}
+:focus-visible{outline:2px solid var(--brand-ink);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
+.app{max-width:660px;margin:0 auto;min-height:100dvh;position:relative;
+  padding-bottom:calc(var(--nav-h) + var(--safe-b) + 12px)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
