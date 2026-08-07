@@ -123,6 +123,13 @@
   .btnrow{display:flex;gap:9px;flex-wrap:wrap}
   .btnrow .btn{flex:1;min-width:120px}
 
+  .warn{margin-top:12px;font-size:11.5px;line-height:1.8;color:var(--warn-ink);
+    background:var(--warn-bg);border-left:3px solid var(--warn-line);
+    padding:11px 13px;border-radius:var(--r-md)}
+  .btn[disabled]{opacity:.55;cursor:default}
+  .aistate{font-size:12.5px;font-weight:800;color:var(--mut);padding:14px 2px;line-height:1.8}
+  .aistate.bad{color:var(--jp)}
+
   .out{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r-md);
     padding:13px;font-size:13px;line-height:1.85;white-space:pre-wrap;word-break:break-word;
     -webkit-user-select:text;user-select:text;margin-bottom:10px}
@@ -232,11 +239,30 @@
       <label class="fldlab" for="scMemo">その日あったこと・言いたいこと（任意）</label>
       <textarea class="field" id="scMemo" placeholder="例: 市場で値切れた／先生に発音褒められた／雨で予定が全部ずれた"></textarea>
       <div class="btnrow" style="margin-top:11px">
-        <button class="btn primary" onclick="genScript()">✍️ 台本をつくる</button>
+        <button class="btn primary" id="btnAI" onclick="genAI()">✨ AIで書く</button>
+        <button class="btn" id="btnTpl" onclick="genScript()">✍️ 定型でつくる</button>
         <button class="btn" onclick="genScript(true)">🔀 別の案</button>
       </div>
     </div>
     <div id="scOut"></div>
+
+    <div class="card">
+      <h2>🔑 AIで書く（任意）<span class="badge" id="keyState">未設定</span></h2>
+      <label class="fldlab" for="apiKey">Anthropic API キー</label>
+      <input class="field" type="password" id="apiKey" placeholder="sk-ant-..."
+        autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="btnrow" style="margin-top:9px">
+        <button class="btn primary" onclick="saveKey()">保存</button>
+        <button class="btn" onclick="clearKey()">削除</button>
+      </div>
+      <div class="warn">
+        キーは<b>この端末のブラウザだけ</b>に保存されます。書き出しファイルにも GitHub にも入りません。
+        ただしブラウザに置いている以上、端末を他人が触れる状況では抜き取られます。
+        使わない期間は削除しておくのが安全です。<br>
+        「AIで書く」を押すと、<b>その日の時間割とメモが Anthropic に送信されます</b>。
+        アポのお客さんの名前は送りません。
+      </div>
+    </div>
   </section>
 
 </div>
@@ -522,43 +548,210 @@ function scriptData(ds,memo,arrival){
     bullets:cuts.map(c=>`・${m2hm(c.g)} ${c.ct}`).join('\n'),
   };
 }
-function genScript(next){
-  if(next)variant++;
-  const ds=document.getElementById('scDate').value||todayStr();
-  const arr=document.getElementById('scArr').value;
-  const memo=document.getElementById('scMemo').value;
-  if(arr!==(DB.prefs.arrival||'')){DB.prefs.arrival=arr;save();}
-  const d=scriptData(ds,memo,arr);
-  const hook=HOOKS[variant%HOOKS.length](d);
-  const cap=CAPS[variant%CAPS.length](d);
-  const es=CAPS_ES[variant%CAPS_ES.length](d);
-  const tags=[...new Set([...TAGS_BASE,...d.cuts.flatMap(c=>TAGS_BY_CAT[c.cat]||[])])].join(' ');
-  const cutList=d.cuts.length
-    ? d.cuts.map((c,i)=>
-        `${i+1}. [${m2hm(c.g)} 現地 / JP ${m2hm(gt2jp(c.g))}] ${catOf(c.cat).e} ${c.ct}`).join('\n')
+/* 画面への描画は定型でもAIでも同じ。r = {hook, cuts[], cap, es, tags} */
+function renderScript(d,r,source){
+  const cutList=r.cuts.length
+    ? r.cuts.map((c,i)=>`${i+1}. ${c}`).join('\n')
     : 'この日はまだ予定が入っていません。カレンダー側で予定を足すと、構成もそれに合わせて出ます。';
-  const full=`【フック】${hook}\n\n【構成】\n${cutList}\n\n【キャプション】\n${cap}\n\n【スペイン語】\n${es}\n\n${tags}`;
+  window.__full=`【フック】${r.hook}\n\n【構成】\n${cutList}\n\n【キャプション】\n${r.cap}\n\n【スペイン語】\n${r.es}\n\n${r.tags}`;
+  const ai=source==='ai';
   document.getElementById('scOut').innerHTML=`
     <div class="card">
-      <h2>🎣 フック（最初の1秒）<span class="badge">${d.md} (${d.wk})</span></h2>
-      <div class="out">${esc(hook)}</div>
-      <div class="outlab">構成（${d.cuts.length}カット）</div>
+      <h2>🎣 フック（最初の1秒）<span class="badge">${ai?'✨ AI':'✍️ 定型'} ・ ${d.md} (${d.wk})</span></h2>
+      <div class="out">${esc(r.hook)}</div>
+      <div class="outlab">構成（${r.cuts.length}カット）</div>
       <div class="out">${esc(cutList)}</div>
     </div>
     <div class="card">
       <h2>✍️ キャプション</h2>
-      <div class="outlab">日本語</div><div class="out">${esc(cap)}</div>
-      <div class="outlab">ESPAÑOL</div><div class="out">${esc(es)}</div>
-      <div class="outlab">ハッシュタグ</div><div class="out">${esc(tags)}</div>
+      <div class="outlab">日本語</div><div class="out">${esc(r.cap)}</div>
+      <div class="outlab">ESPAÑOL</div><div class="out">${esc(r.es)}</div>
+      <div class="outlab">ハッシュタグ</div><div class="out">${esc(r.tags)}</div>
       <div class="btnrow">
-        <button class="btn primary" onclick='copyAll()'>📋 まとめてコピー</button>
-        <button class="btn" onclick="genScript(true)">🔀 別の案</button>
+        <button class="btn primary" onclick="copyAll()">📋 まとめてコピー</button>
+        <button class="btn" onclick="${ai?'genAI()':'genScript(true)'}">🔀 別の案</button>
       </div>
     </div>
     <div class="empty" style="text-align:left">
-      文面はその日の時間割から組んだ下書きです。出す前に自分の言葉に直してください。
+      ${ai ? 'AI が書いた下書きです。事実とニュアンスは自分で確かめてから出してください。'
+           : '文面はその日の時間割から組んだ下書きです。出す前に自分の言葉に直してください。'}
     </div>`;
-  window.__full=full;
+}
+
+/* 入力欄の読み取りは定型もAIも同じ入口を通す */
+function readForm(){
+  const ds=document.getElementById('scDate').value||todayStr();
+  const arr=document.getElementById('scArr').value;
+  const memo=document.getElementById('scMemo').value;
+  if(arr!==(DB.prefs.arrival||'')){DB.prefs.arrival=arr;save();}
+  return {ds,memo,d:scriptData(ds,memo,arr)};
+}
+
+function genScript(next){
+  if(next)variant++;
+  const {d}=readForm();
+  renderScript(d,{
+    hook:HOOKS[variant%HOOKS.length](d),
+    cuts:d.cuts.map(c=>`[${m2hm(c.g)} 現地 / JP ${m2hm(gt2jp(c.g))}] ${catOf(c.cat).e} ${c.ct}`),
+    cap:CAPS[variant%CAPS.length](d),
+    es:CAPS_ES[variant%CAPS_ES.length](d),
+    tags:[...new Set([...TAGS_BASE,...d.cuts.flatMap(c=>TAGS_BY_CAT[c.cat]||[])])].join(' '),
+  },'tpl');
+}
+
+/* ============================================================
+   AI で書く — Claude API をブラウザから直接呼ぶ
+   キーは DB とは別の場所に置く。DB に入れると書き出しファイルに混ざり、
+   バックアップを誰かに渡した時点でキーごと渡ることになる。
+   ============================================================ */
+const KEY_STORE='takuha_tree_api_key';
+const getKey=()=>{try{return localStorage.getItem(KEY_STORE)||'';}catch(_){return '';}};
+function syncKey(){
+  const has=!!getKey();
+  const st=document.getElementById('keyState');
+  if(st)st.textContent=has?'設定済み':'未設定';
+  const ai=document.getElementById('btnAI'),tpl=document.getElementById('btnTpl');
+  if(ai){ai.disabled=!has;ai.classList.toggle('primary',has);}
+  if(tpl)tpl.classList.toggle('primary',!has);
+}
+function saveKey(){
+  const el=document.getElementById('apiKey');
+  const v=el.value.trim();
+  if(!v){toast('キーを貼り付けてね');return;}
+  try{localStorage.setItem(KEY_STORE,v);}catch(_){toast('保存できませんでした');return;}
+  el.value='';syncKey();toast('キーを保存しました');
+}
+function clearKey(){
+  try{localStorage.removeItem(KEY_STORE);}catch(_){}
+  const el=document.getElementById('apiKey');if(el)el.value='';
+  syncKey();toast('キーを削除しました');
+}
+
+const MODEL='claude-opus-5';
+const SCRIPT_SCHEMA={
+  type:'object',
+  properties:{
+    hook:{type:'string',description:'最初の1秒で指を止めるための1文'},
+    cuts:{type:'array',description:'3〜5カットの構成',items:{
+      type:'object',
+      properties:{
+        time:{type:'string',description:'現地時刻 HH:MM'},
+        shot:{type:'string',description:'そのカットで何を写すかを1行で'},
+      },
+      required:['time','shot'],additionalProperties:false}},
+    caption_ja:{type:'string',description:'日本語キャプション 120〜200字'},
+    caption_es:{type:'string',description:'スペイン語キャプション 40〜80語'},
+    hashtags:{type:'array',description:'8〜14個',items:{type:'string'}},
+  },
+  required:['hook','cuts','caption_ja','caption_es','hashtags'],
+  additionalProperties:false,
+};
+const SYS=`あなたはリール制作のパートナー。書き手はグアテマラ在住の日本人で、スペイン語を学びながら日本のフォロワーに向けて発信している。日本とは15時間の時差がある（日本が先行）。
+
+書き方の決まり:
+- フックは1文、15〜25字。煽らない、盛らない。その日の具体を1つ入れる。
+- 構成は3〜5カット。各カットは現地時刻と「何を写すか」を1行で。
+- 日本語キャプションは120〜200字。本人の一人称で、結論から書く。
+- スペイン語キャプションは40〜80語。日本語の直訳ではなく、現地の人が読んで自然な文にする。日本語は1文字も混ぜない。
+- ハッシュタグは8〜14個。日本語とスペイン語を混ぜる。
+- 与えられた時間割とメモに書かれていることだけで書く。ないことを足さない。
+- 説明・前置き・補足は書かない。指定された項目だけを返す。`;
+
+/* 送るのは時間割とメモだけ。アポはお客さんの名前を出さず本数だけにする。 */
+function aiPrompt(d,ds){
+  const rows=timeline(dayType(ds)).map(r=>({g:r.g,t:clean(r.t)}));
+  (DB.events[ds]||[]).forEach(e=>rows.push({g:e.gt,t:clean(e.title)}));
+  rows.sort((a,b)=>a.g-b.g);
+  const apo=Object.keys(DB.appts[ds]||{}).length;
+  const L=[`日付: ${ds}（${d.wk}曜 / ${d.wkEs}）`];
+  if(d.nth)L.push(`グアテマラ${d.nth}日目`);
+  L.push(`その日の型: ${d.typeName}`);
+  L.push(`起きている時間: 現地 ${d.gtSpan} ／ 日本時間 ${d.jpSpan}`);
+  if(apo)L.push(`日本のお客さんとのアポ: ${apo}本（相手が誰かは伏せる）`);
+  L.push('','その日の時間割（現地時刻）:');
+  rows.forEach(r=>L.push(`- ${m2hm(r.g)} ${r.t}`));
+  if(d.memo)L.push('','本人のメモ:',d.memo);
+  L.push('','この日のリールの台本を作って。');
+  return L.join('\n');
+}
+
+function httpMsg(status,detail){
+  if(status===401||status===403)return 'APIキーが違うか、権限がありません。設定を見直してください。';
+  if(status===429)return 'リクエストが多すぎます。少し待ってからもう一度。';
+  if(status>=500)return 'Anthropic 側が混み合っています。少し待ってからもう一度。';
+  return `エラー（${status}）${detail?'：'+detail:''}`;
+}
+async function callClaude(userText,signal){
+  let res;
+  try{
+    res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',signal,
+      headers:{
+        'content-type':'application/json',
+        'x-api-key':getKey(),
+        'anthropic-version':'2023-06-01',
+        /* ブラウザから直接叩くための明示的な opt-in。これが無いと CORS で弾かれる。 */
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body:JSON.stringify({
+        model:MODEL,
+        /* Opus 5 は thinking が既定でON。max_tokens は thinking と本文の合計に
+           かかる上限なので、本文が短くても余裕を持たせる。 */
+        max_tokens:8000,
+        system:SYS,
+        output_config:{effort:'medium',format:{type:'json_schema',schema:SCRIPT_SCHEMA}},
+        messages:[{role:'user',content:userText}],
+      }),
+    });
+  }catch(e){
+    if(e.name==='AbortError')throw e;
+    throw new Error('つながりませんでした。通信状況とキーを確かめてください。');
+  }
+  if(!res.ok){
+    let detail='';
+    try{const j=await res.json();detail=(j.error&&j.error.message)||'';}catch(_){}
+    throw new Error(httpMsg(res.status,detail));
+  }
+  const data=await res.json();
+  if(data.stop_reason==='refusal')
+    throw new Error('内容が安全フィルタに引っかかりました。メモの書き方を変えて試してください。');
+  if(data.stop_reason==='max_tokens')
+    throw new Error('出力が途中で切れました。メモを短くして試してください。');
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+  try{return JSON.parse(text);}
+  catch(_){throw new Error('返ってきた形が読めませんでした。もう一度試してください。');}
+}
+
+let aiBusy=false;
+async function genAI(){
+  if(aiBusy)return;
+  if(!getKey()){toast('先に API キーを保存してね');return;}
+  const {ds,d}=readForm();
+  const btn=document.getElementById('btnAI');
+  aiBusy=true;btn.disabled=true;btn.textContent='✨ 書いています…';
+  document.getElementById('scOut').innerHTML=
+    '<div class="card"><div class="aistate">✨ Claude が書いています…</div></div>';
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),150000);
+  try{
+    const r=await callClaude(aiPrompt(d,ds),ac.signal);
+    renderScript(d,{
+      hook:String(r.hook||'').trim(),
+      cuts:(r.cuts||[]).map(c=>`[${c.time} 現地] ${c.shot}`),
+      cap:String(r.caption_ja||'').trim(),
+      es:String(r.caption_es||'').trim(),
+      tags:(r.hashtags||[]).map(t=>String(t).startsWith('#')?t:'#'+t).join(' '),
+    },'ai');
+  }catch(e){
+    const msg=e.name==='AbortError'
+      ? '時間がかかりすぎたので中断しました。もう一度試してください。'
+      : (e.message||'うまくいきませんでした。');
+    document.getElementById('scOut').innerHTML=
+      `<div class="card"><div class="aistate bad">⚠️ ${esc(msg)}</div>
+        <div class="btnrow"><button class="btn" onclick="genScript()">✍️ 定型でつくる</button></div></div>`;
+  }finally{
+    clearTimeout(timer);aiBusy=false;btn.disabled=false;btn.textContent='✨ AIで書く';
+  }
 }
 function copyAll(){
   const t=window.__full||'';
@@ -581,7 +774,7 @@ function fallbackCopy(t,done){
 applyAppearance();
 document.getElementById('scDate').value=todayStr();
 if(DB.prefs.arrival)document.getElementById('scArr').value=DB.prefs.arrival;
-renderAnalysis();syncLook();
+renderAnalysis();syncLook();syncKey();
 /* 本体タブで予定を足したら、こちらの集計も追従させる */
 addEventListener('storage',e=>{if(e.key===KEY){reloadDB();applyAppearance();renderAnalysis();syncLook();}});
 </script>
