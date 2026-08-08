@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#f6f8fb" media="(prefers-color-scheme:light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="TAKUHA tree">
+<meta name="apple-mobile-web-app-title" content="árbol">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="予定・時差対応カレンダー（🇬🇹グアテマラ ⇄ 🇯🇵日本 15h）">
 <link rel="manifest" href="manifest.json">
@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
 <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<title>TAKUHA tree ｜ 予定・時差カレンダー</title>
+<title>árbol ｜ 予定・時差カレンダー</title>
 <link rel="stylesheet" href="theme.css">
 <style>
   /* ============================================================
@@ -323,7 +323,7 @@
   <header class="topbar">
     <div class="brand">
       <span class="logo" aria-hidden="true">🌳</span>
-      <h1>TAKUHA tree</h1>
+      <h1>árbol</h1>
       <span class="tag">🇬🇹⇄🇯🇵 15h</span>
       <button class="themebtn" id="themeBtn" onclick="cycleTheme()" aria-label="テーマ切替">🌗</button>
     </div>
@@ -946,6 +946,25 @@ function exportData(){
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   toast('書き出しました');
 }
+/* 今ある予定を消さずに足す。id が同じものだけ上書きする */
+function mergeInto(d){
+  (d.ranges||[]).forEach(r=>{
+    const i=DB.ranges.findIndex(x=>String(x.id)===String(r.id));
+    if(i>=0)DB.ranges[i]=r;else DB.ranges.push(r);});
+  Object.entries(d.events||{}).forEach(([ds,list])=>{
+    DB.events[ds]=DB.events[ds]||[];
+    (list||[]).forEach(it=>{
+      const i=DB.events[ds].findIndex(x=>String(x.id)===String(it.id));
+      if(i>=0)DB.events[ds][i]=it;else DB.events[ds].push(it);});});
+  Object.entries(d.appts||{}).forEach(([ds,slots])=>{
+    DB.appts[ds]=Object.assign(DB.appts[ds]||{},slots||{});});
+  Object.entries(d.done||{}).forEach(([ds,marks])=>{
+    DB.done[ds]=Object.assign(DB.done[ds]||{},marks||{});});
+}
+function hasAnyData(){
+  return DB.ranges.length||Object.keys(DB.events).length
+      ||Object.keys(DB.appts).length||Object.keys(DB.done).length;
+}
 function importData(ev){
   const f=ev.target.files[0];if(!f)return;
   const r=new FileReader();
@@ -954,10 +973,13 @@ function importData(ev){
       const d=JSON.parse(r.result);
       if(!d||typeof d!=='object')throw new Error('bad');
       const keep=DB.prefs;              /* 見た目の設定は取り込み側を残す */
-      DB=d;normalizeDB();
-      DB.prefs=Object.assign({},keep,DB.prefs);
+      const merge=hasAnyData()
+        ?confirm('OK ＝ 今の予定に「追加」\nキャンセル ＝ ぜんぶ「置き換え」（今の予定は消えます）')
+        :false;
+      if(merge){mergeInto(d);normalizeDB();}
+      else{DB=d;normalizeDB();DB.prefs=Object.assign({},keep,DB.prefs);}
       save();refresh();applyTheme();
-      toast('読み込みました ／ Importado');
+      toast(merge?'追加しました ／ Añadido':'読み込みました ／ Importado');
     }catch(_){toast('読み込めませんでした ／ Error');}
     ev.target.value='';
   };
