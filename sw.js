@@ -1,9 +1,9 @@
 /* árbol — offline service worker
    方針:
-     HTML  … network-first（更新を取りこぼさない。オフライン時だけキャッシュ）
+     HTML・sync.json … network-first（更新を取りこぼさない。オフライン時だけキャッシュ）
      その他 … cache-first（アイコン等は変わらないので速さ優先）
    キャッシュ名の版を上げると古いキャッシュは activate 時に消える。 */
-const VERSION = 'arbol-v3';
+const VERSION = 'arbol-v4';
 const SHELL = [
   './',
   './index.html',
@@ -42,6 +42,20 @@ self.addEventListener('fetch', e => {
 
   const wantsHTML = req.mode === 'navigate' ||
     (req.headers.get('accept') || '').includes('text/html');
+
+  if (url.pathname.endsWith('/sync.json')) {
+    e.respondWith((async () => {
+      try {
+        const fresh = await fetch(req, { cache: 'no-store' });
+        const c = await caches.open(VERSION);
+        c.put(req, fresh.clone());
+        return fresh;
+      } catch (_) {
+        return (await caches.match(req)) || Response.error();
+      }
+    })());
+    return;
+  }
 
   if (wantsHTML) {
     e.respondWith((async () => {

@@ -1035,6 +1035,19 @@ setInterval(()=>{if(curView==='day')renderTimeline();},60000);
 let lastDay=todayStr();
 setInterval(()=>{const t=todayStr();if(t!==lastDay){lastDay=t;refresh();}},30000);
 
+/* ---- cloud sync: sync.json を静かに取り込む ----
+   タクハさんが「árbolに反映」と言ったらAIがこのリポジトリのsync.jsonを更新してpush、
+   アプリはここでそれを毎回フェッチしてmergeInto（id一致は上書き・新規は追加）する。
+   端末側の追加・編集は消さない（mergeIntoはidに無いものを削除しない）。
+   キャンセルや削除は本人がappで消すのではなくAI側にsync.jsonから外すよう伝える運用
+   （このfetchは毎回走るので、sync.jsonに残っていると復活してしまう）。 */
+(function(){
+  fetch('./sync.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+    if(!d||typeof d!=='object')return;
+    mergeInto(d);normalizeDB();save();refresh();
+  }).catch(()=>{});
+})();
+
 /* ---- service worker (offline) ---- */
 if('serviceWorker' in navigator){
   addEventListener('load',()=>{
