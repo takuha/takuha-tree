@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#f6f8fb" media="(prefers-color-scheme:light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="árbol">
+<meta name="apple-mobile-web-app-title" content="TIM">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="予定・時差対応カレンダー（🇬🇹グアテマラ ⇄ 🇯🇵日本 15h）">
 <link rel="manifest" href="manifest.json">
@@ -16,7 +16,7 @@
 <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
 <link rel="apple-touch-icon" sizes="120x120" href="icons/icon-120.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<title>árbol ｜ 予定・時差カレンダー</title>
+<title>TIM ｜ 予定・時差カレンダー</title>
 <link rel="stylesheet" href="theme.css">
 <style>
   /* ============================================================
@@ -322,8 +322,8 @@
   <!-- ===== TOP BAR ===== -->
   <header class="topbar">
     <div class="brand">
-      <span class="logo" aria-hidden="true">🌳</span>
-      <h1>árbol</h1>
+      <span class="logo" aria-hidden="true">⏱️</span>
+      <h1>TIM</h1>
       <span class="tag">🇬🇹⇄🇯🇵 15h</span>
       <button class="themebtn" id="themeBtn" onclick="cycleTheme()" aria-label="テーマ切替">🌗</button>
     </div>
@@ -1036,7 +1036,7 @@ let lastDay=todayStr();
 setInterval(()=>{const t=todayStr();if(t!==lastDay){lastDay=t;refresh();}},30000);
 
 /* ---- cloud sync: sync.json を静かに取り込む ----
-   タクハさんが「árbolに反映」と言ったらAIがこのリポジトリのsync.jsonを更新してpush、
+   タクハさんが「TIMに反映」と言ったらAIがこのリポジトリのsync.jsonを更新してpush、
    アプリはここでそれを毎回フェッチしてmergeInto（id一致は上書き・新規は追加）する。
    端末側の追加・編集は消さない（mergeIntoはidに無いものを削除しない）。
    キャンセルや削除は本人がappで消すのではなくAI側にsync.jsonから外すよう伝える運用

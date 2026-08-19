@@ -1,9 +1,9 @@
-/* árbol — offline service worker
+/* TIM — offline service worker
    方針:
      HTML・sync.json … network-first（更新を取りこぼさない。オフライン時だけキャッシュ）
      その他 … cache-first（アイコン等は変わらないので速さ優先）
    キャッシュ名の版を上げると古いキャッシュは activate 時に消える。 */
-const VERSION = 'arbol-v4';
+const VERSION = 'tim-v1';
 const SHELL = [
   './',
   './index.html',
