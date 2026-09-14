@@ -38,6 +38,7 @@ const DAYTYPE_NAME = { A: '平日A（会話の日）', B: '火・自習厚め', 
 const CAT = {
   fix:   { e: '🇪🇸', n: '授業／絶対', bar: '#159f76' },
   apo:   { e: '🤝', n: 'アポ',        bar: '#c9971c' },
+  biz:   { e: '💰', n: 'ビジネス',    bar: '#0e7490' },
   work:  { e: '💼', n: '日本仕事',    bar: '#3b4fc0' },
   study: { e: '📚', n: '勉強・自習',  bar: '#2f7fc0' },
   talk:  { e: '🗣️', n: '会話',        bar: '#c0417a' },
@@ -144,6 +145,7 @@ function normalizeDB() {
   }
   if (p.theme === undefined) p.theme = 'auto';
   if (p.accent === undefined) p.accent = 'tree';
+  if (p.feedFilter === undefined) p.feedFilter = 'all';
 }
 normalizeDB();
 

@@ -407,6 +407,10 @@
   <!-- ===== VIEW: FEED ===== -->
   <section class="view" id="v-feed" aria-label="今後の予定">
     <div class="mhead"><div class="mlabel" style="text-align:left;font-size:18px">📰 Próximos ／ 今後の予定</div></div>
+    <div class="seg" role="group" aria-label="表示の絞り込み">
+      <button id="feed-all" onclick="setFeedFilter('all')">すべて</button>
+      <button id="feed-biz" onclick="setFeedFilter('biz')">💰 ビジネスのみ</button>
+    </div>
     <div id="feedList"></div>
   </section>
 
@@ -665,7 +669,7 @@ function renderLegend(){
   if(lr)lr.innerHTML=[['A','🇪🇸 授業（月水木金）'],['B','📚 自習（火）'],['W','🎉 遊び（土日）']]
     .map(([ty,label])=>`<span class="lgchip rt-${ty}">${label}</span>`).join('');
   const lc=document.getElementById('lgCats');
-  if(lc)lc.innerHTML=['apo','work','talk','study','ai','film','sns','train','meal','free','self']
+  if(lc)lc.innerHTML=['apo','biz','work','talk','study','ai','film','sns','train','meal','free','self']
     .map(k=>{const c=catOf(k);return `<span class="lgchip" style="background:${c.bar}">${c.e}${c.n}</span>`;}).join('');
   applyLegendOpen();
 }
@@ -775,7 +779,7 @@ function delBooking(){
    add / edit sheet (時刻の予定 と 期間の予定)
    ============================================================ */
 let curCat='ai',editingId=null,editingRangeId=null,evMode='time';
-const CHIP_CATS=['ai','free','apo','film','study','talk','train','work','play','meal','sns','self'];
+const CHIP_CATS=['ai','free','apo','biz','film','study','talk','train','work','play','meal','sns','self'];
 function renderChips(){
   document.getElementById('catChips').innerHTML=CHIP_CATS.map(k=>{const c=catOf(k);const on=k===curCat;
     return `<button type="button" class="chip${on?' on':''}" ${on?`style="background:${c.bar};border-color:${c.bar}"`:''}
@@ -876,10 +880,19 @@ function delEditing(){
 /* ============================================================
    FEED
    ============================================================ */
+function setFeedFilter(f){DB.prefs.feedFilter=f;save();renderFeed();}
+function applyFeedFilterUI(){
+  const f=DB.prefs.feedFilter||'all';
+  const a=document.getElementById('feed-all'),b=document.getElementById('feed-biz');
+  if(a)a.classList.toggle('on',f==='all');
+  if(b)b.classList.toggle('on',f==='biz');
+}
 function renderFeed(){
+  applyFeedFilterUI();
+  const filter=DB.prefs.feedFilter||'all';
   const today=todayStr();
   const dates=new Set([...Object.keys(DB.events),...Object.keys(DB.appts)]);
-  const rows=[];
+  let rows=[];
   dates.forEach(ds=>{if(ds<today)return;
     (DB.events[ds]||[]).forEach(e=>rows.push({ds,g:e.gt,t:e.title,cat:e.cat||'free'}));
     const bk=DB.appts[ds]||{};
@@ -888,10 +901,13 @@ function renderFeed(){
   /* 期間予定も今後の予定として並べる（開始日で1行） */
   DB.ranges.forEach(r=>{if(r.end<today)return;
     rows.push({ds:r.start<today?today:r.start,g:-1,t:'📆 '+r.title+`（${r.start}〜${r.end}）`,cat:r.cat||'free',span:true});});
+  if(filter==='biz')rows=rows.filter(r=>r.cat==='biz');
   rows.sort((a,b)=>a.ds<b.ds?-1:a.ds>b.ds?1:a.g-b.g);
   const el=document.getElementById('feedList');
   if(!rows.length){
-    el.innerHTML='<div class="feed-empty">まだ予定・アポがありません ／ Aún no hay eventos.<br>＋ボタンか月カレンダーから追加してね</div>';
+    el.innerHTML=filter==='biz'
+      ?'<div class="feed-empty">ビジネスの予定はまだありません ／ Aún no hay eventos de negocio.<br>＋ボタンで予定を追加するとき「💰ビジネス」を選ぶとここに出るよ</div>'
+      :'<div class="feed-empty">まだ予定・アポがありません ／ Aún no hay eventos.<br>＋ボタンか月カレンダーから追加してね</div>';
     return;
   }
   let h='',lastDate='';
