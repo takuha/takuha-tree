@@ -1,0 +1,27 @@
+name: Add schedule from voice
+
+on:
+  repository_dispatch:
+    types: [add_schedule]
+
+permissions:
+  contents: write
+
+jobs:
+  add:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Parse voice text and add to sync.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          INPUT_TEXT: ${{ github.event.client_payload.text }}
+          INPUT_NOW: ${{ github.event.client_payload.now }}
+        run: python3 scripts/add_schedule.py

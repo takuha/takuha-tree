@@ -49,6 +49,35 @@ Anthropic の API キーを入れると、台本タブの「✨ AIで書く」�
   触れる状況では抜き取られる。使わない期間は画面の「削除」で消しておく。
   それが困るなら、キーを持つ小さなプロキシを挟む形に変えるしかない。
 
+## 音声で予定追加（Siriショートカット）
+
+iPhoneで「予定追加」と話しかけると、Siriショートカット→GitHub Actions
+（`.github/workflows/add-schedule.yml` → `scripts/add_schedule.py`）が
+発話テキストをClaude APIで解析し、`sync.json`に追記してpushする。
+数十秒後にntfy（トピック`takuha-aichan-3fcb886f2fa7`）で結果が届く。
+
+セットアップ（初回のみ、本人がGitHub/Shortcuts側で行う）:
+
+1. **GitHub Actions シークレット**: リポジトリの Settings → Secrets and
+   variables → Actions → New repository secret で `ANTHROPIC_API_KEY` を追加
+   （console.anthropic.com のAPIキー。改善スタジオのブラウザ用キーとは別管理）。
+2. **PAT（このiPhone専用）**: GitHub → Settings → Developer settings →
+   Personal access tokens → Fine-grained tokens で新規作成。
+   Repository access は `takuha-tree` のみ、Permissions は
+   `Contents: Read and write` を付与。
+3. **iPhone Shortcuts アプリ**で新規ショートカット「予定追加」を作成:
+   - `Dictate Text`（言語: 日本語）
+   - `Get Contents of URL`:
+     - URL: `https://api.github.com/repos/takuha/takuha-tree/dispatches`
+     - Method: POST
+     - Headers: `Authorization: Bearer <PAT>` / `Accept: application/vnd.github+json`
+     - Request Body (JSON): `event_type` = `add_schedule`、
+       `client_payload` = 辞書 `{ text: <Dictated Text>, now: <現在日時ISO8601> }`
+   - Siriフレーズ「予定追加」を割り当て
+
+`gt`変換はJP時間前提（本人が現在日本にいるため）。カテゴリはCATキーから
+Claudeが内容で推定、不明なら`free`。
+
 ## データの形
 
 キー `takuha_sched_v1`。旧バージョンのデータはそのまま開ける。
