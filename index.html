@@ -701,9 +701,9 @@ function renderDay(dir){
   document.getElementById('dBig').textContent=`${mo}/${d} (${WK[w]}·${WKJ[w]})`;
   document.getElementById('dSm').textContent=`${y}　${SEL===todayStr()?'· Hoy 今日':''}`;
   const dt=document.getElementById('dType');
-  dt.className='daytype '+(type==='A'?'dt-A':type==='B'?'dt-B':'dt-W');
-  dt.textContent=type==='A'?'平日A':type==='B'?'火·自習厚め':'週末';
-  document.getElementById('tlBadge').textContent=type==='A'?'会話の日':type==='B'?'自習厚め':'遊ぶ日';
+  dt.className='daytype '+(type==='A'?'dt-A':'dt-W');
+  dt.textContent=type==='A'?'平日':'週末';
+  document.getElementById('tlBadge').textContent=type==='A'?'店に立つ日':'遊ぶ日';
   renderDayRanges();renderTimeline();renderSlots();
   const m=document.getElementById('dMask');
   if(dir){m.classList.remove('slideL','slideR');void m.offsetWidth;
@@ -726,7 +726,7 @@ function renderTimeline(){
   const apoRows=Object.keys(bk).filter(i=>APO[i]).map(i=>({g:APO[i].gt,e:APO[i].gt+30,
     t:'🤝 アポ: '+bk[i].name,cat:'apo',apoI:+i}));
   const all=tl.concat(evs,apoRows).sort((a,b)=>a.g-b.g);
-  const gN=nowParts(-6);const nowMin=gN.getHours()*60+gN.getMinutes();
+  const gN=nowParts(9);const nowMin=gN.getHours()*60+gN.getMinutes();
   const isToday=SEL===todayStr();
   let h='',doneN=0;
   all.forEach(r=>{
@@ -738,7 +738,7 @@ function renderTimeline(){
     const clk=r.user?`onclick="openEdit(${r.id})"`:(r.apoI!=null?`onclick="openApo(${r.apoI})"`:'');
     const tag=(r.user||r.apoI!=null)?'button':'div';
     h+=`<div class="row${r.fix?' fix':''}${isNow?' nowrow':''}${done?' isdone':''}">
-      <div class="rtime"><span class="g">${m2hm(r.g)}</span><span class="j">JP ${m2hm(gt2jp(r.g))}</span></div>
+      <div class="rtime"><span class="g">${m2hm(r.g)}</span></div>
       <${tag} type="button" class="rbody" ${clk}>
         <div class="rttl">${r.user?'⭐ ':''}${esc(r.t)}${rng?`<span style="color:var(--mut);font-size:11px"> ${rng}</span>`:''}</div>
         <div class="rmeta"><span class="cpill" style="background:${cat.bar}">${cat.e}${cat.n}</span>${isNow?'<span class="now">NOW</span>':''}</div>

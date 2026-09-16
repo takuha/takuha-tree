@@ -19,10 +19,10 @@ function nowParts(off) {
 const WK = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const WKJ = ['日', '月', '火', '水', '木', '金', '土'];
 
-/* ===== date helpers（すべて現地=GT基準） ===== */
-function todayStr() { const g = nowParts(-6); return g.getFullYear() + '-' + pad(g.getMonth() + 1) + '-' + pad(g.getDate()); }
+/* ===== date helpers（2026-09-16〜：大阪(JP)基準に変更。スペイン語授業終了に伴いGT基準を廃止） ===== */
+function todayStr() { const j = nowParts(9); return j.getFullYear() + '-' + pad(j.getMonth() + 1) + '-' + pad(j.getDate()); }
 function dow(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d).getDay(); }
-function dayType(s) { const w = dow(s); if (w === 0 || w === 6) return 'W'; if (w === 2) return 'B'; return 'A'; }
+function dayType(s) { const w = dow(s); return (w === 0 || w === 6) ? 'W' : 'A'; }
 function addDays(s, n) {
   const [y, m, d] = s.split('-').map(Number); const dt = new Date(y, m - 1, d); dt.setDate(dt.getDate() + n);
   return dt.getFullYear() + '-' + pad(dt.getMonth() + 1) + '-' + pad(dt.getDate());
@@ -31,15 +31,15 @@ function daysBetween(a, b) {
   const [ay, am, ad] = a.split('-').map(Number), [by, bm, bd] = b.split('-').map(Number);
   return Math.round((new Date(by, bm - 1, bd) - new Date(ay, am - 1, ad)) / 86400000);
 }
-const ROUTINE_LABEL = { A: '🇪🇸授業', B: '📚自習', W: '🎉遊び' };
-const DAYTYPE_NAME = { A: '平日A（会話の日）', B: '火・自習厚め', W: '週末' };
+const ROUTINE_LABEL = { A: '🍲営業日', W: '🎉遊び' };
+const DAYTYPE_NAME = { A: '平日', W: '週末' };
 
 /* ===== categories ===== */
 const CAT = {
   fix:   { e: '🇪🇸', n: '授業／絶対', bar: '#159f76' },
   apo:   { e: '🤝', n: 'アポ',        bar: '#c9971c' },
   biz:   { e: '💰', n: 'ビジネス',    bar: '#0e7490' },
-  work:  { e: '💼', n: '日本仕事',    bar: '#3b4fc0' },
+  work:  { e: '💼', n: '仕事',        bar: '#3b4fc0' },
   study: { e: '📚', n: '勉強・自習',  bar: '#2f7fc0' },
   talk:  { e: '🗣️', n: '会話',        bar: '#c0417a' },
   play:  { e: '🎉', n: '遊び',        bar: '#d0504d' },
@@ -53,48 +53,27 @@ const CAT = {
 };
 const catOf = k => CAT[k] || CAT.free;
 
-/* ===== いつもの時間割（GTの分） ===== */
+/* ===== いつもの時間割（2026-09-16〜：大阪基準・分は大阪の実時刻そのもの）
+   スペイン語授業終了（Máximo Nivel 2026-08-28卒業）＋しゃぶしゃぶ「青柳」開店(10/1)に伴い作り直し。
+   平日は火だけ別枠にする理由がなくなったので type は A(平日)／W(週末)の2種類のみ。 ===== */
 function timeline(type) {
-  const sch  = { g: 9 * 60,  e: 13 * 60, t: '🇪🇸 Clase de español ／ スペイン語授業', fix: true, cat: 'fix' };
-  const work = { g: 20 * 60, e: 22 * 60, t: '💼 Trabajo en vivo de Japón + citas ／ 日本のリアルタイム仕事＋アポ', fix: true, cat: 'fix' };
+  const shop = { g: 18 * 60, e: 24 * 60, t: '🍲 青柳で店に立つ ／ En el restaurante Aoyagi', fix: true, cat: 'work' };
   if (type === 'A') return [
-    { g: 6 * 60,      t: '📲 SNS投稿＋日本の連絡確認＋撮影 ／ Publicar + revisar + grabar', cat: 'sns' },
-    { g: 6 * 60 + 30, t: '✍️ 1日の設計＋余白(5分) ／ Diseño del día', cat: 'self' },
-    { g: 7 * 60,      t: '💪 筋トレ・散歩1h ／ Gym / caminata', cat: 'train' },
-    { g: 8 * 60,      t: '🍳 朝食・身支度・移動 ／ Desayuno y traslado', cat: 'meal' },
-    { ...sch },
-    { g: 13 * 60,      t: '🍴 ランチ＋昼リール ／ Almuerzo + reel', cat: 'meal' },
-    { g: 14 * 60,      t: '🗣️ スペイン語会話＋撮影 ／ Conversación + grabar', e: 15 * 60 + 30, cat: 'talk' },
-    { g: 15 * 60 + 30, t: '🆓 フリー(余白・移動) ／ Libre', e: 16 * 60, cat: 'free' },
-    { g: 16 * 60,      t: '☕ カフェで自習 ／ Autoestudio en café', e: 17 * 60, cat: 'study' },
-    { g: 17 * 60,      t: '🎬 編集＋西語字幕＋マーケ ／ Edición + subtítulos', e: 18 * 60 + 30, cat: 'film' },
-    { g: 18 * 60 + 30, t: '🍳 自炊の晩ごはん(vlog) ／ Cena casera', cat: 'meal' },
-    { g: 19 * 60,      t: '📚 夜の自習 ／ Autoestudio nocturno', e: 19 * 60 + 30, cat: 'study' },
-    { g: 19 * 60 + 30, t: '🆓 フリー ／ Libre', e: 20 * 60, cat: 'free' },
-    { ...work },
-    { g: 22 * 60,      t: '🌙 夜リール＋翌朝分を予約 ／ Reel nocturno', cat: 'sns' },
-    { g: 22 * 60 + 30, t: '🪞 夜の振り返り(5分) ／ Reflexión', cat: 'self' },
-    { g: 23 * 60,      t: '😴 就寝(0:00–6:00, 6h) ／ A dormir', cat: 'self' },
-  ];
-  if (type === 'B') return [
-    { g: 6 * 60,      t: '📲 SNS投稿＋日本の連絡確認＋撮影 ／ Publicar + revisar', cat: 'sns' },
-    { g: 6 * 60 + 30, t: '✍️ 1日の設計＋余白(5分) ／ Diseño del día', cat: 'self' },
-    { g: 7 * 60,      t: '💪 筋トレ・散歩1h ／ Gym / caminata', cat: 'train' },
-    { g: 8 * 60,      t: '🍳 朝食・身支度・移動 ／ Desayuno y traslado', cat: 'meal' },
-    { ...sch },
-    { g: 13 * 60, t: '🍴 ランチ＋昼リール ／ Almuerzo + reel', cat: 'meal' },
-    { g: 14 * 60, t: '☕ カフェ自習(2h) ／ Autoestudio en café', e: 16 * 60, cat: 'study' },
-    { g: 16 * 60, t: '🎬 編集・マーケ ／ Edición + marketing', e: 18 * 60, cat: 'film' },
-    { g: 18 * 60, t: '🍳 自炊の晩ごはん(vlog) ／ Cena casera', cat: 'meal' },
-    { g: 19 * 60, t: '📚 夜の自習 ／ Autoestudio nocturno', e: 19 * 60 + 30, cat: 'study' },
-    { ...work },
-    { g: 22 * 60,      t: '🌙 夜リール＋翌朝分を予約 ／ Reel nocturno', cat: 'sns' },
-    { g: 22 * 60 + 30, t: '🪞 夜の振り返り(5分) ／ Reflexión', cat: 'self' },
-    { g: 23 * 60,      t: '😴 就寝(0:00–6:00, 6h) ／ A dormir', cat: 'self' },
+    { g: 6 * 60,       t: '📲 SNS投稿確認＋撮影 ／ Revisar SNS + grabar', cat: 'sns' },
+    { g: 7 * 60,       t: '💪 筋トレ・散歩1h ／ Gym / caminata', cat: 'train' },
+    { g: 8 * 60,       t: '🍳 朝食・身支度 ／ Desayuno y arreglo', cat: 'meal' },
+    { g: 9 * 60,       t: '🤖 AI作業・案件対応 ／ Trabajo con IA', e: 12 * 60, cat: 'ai' },
+    { g: 12 * 60,      t: '🍴 ランチ ／ Almuerzo', cat: 'meal' },
+    { g: 13 * 60,      t: '🎬 編集・マーケ・SNS運用 ／ Edición + marketing', e: 17 * 60, cat: 'film' },
+    { g: 17 * 60,      t: '🚗 店へ移動・仕込み確認 ／ Ir al restaurante', e: 18 * 60, cat: 'work' },
+    { ...shop },
+    { g: 24 * 60,      t: '🚗 帰宅 ／ Volver a casa', cat: 'self' },
+    { g: 24 * 60 + 30, t: '🪞 夜の振り返り(5分) ／ Reflexión', cat: 'self' },
+    { g: 25 * 60,      t: '😴 就寝(1:00–6:00, 5h) ／ A dormir', cat: 'self' },
   ];
   return [
     { g: 7 * 60,  t: '🌅 ゆっくり起床・撮りだめ ／ Despertar tranquilo', cat: 'sns' },
-    { g: 10 * 60, t: '🎉 遊びに行く(観光・サルサ・友達) ／ Salir a divertirse', e: 14 * 60, cat: 'play' },
+    { g: 10 * 60, t: '🎉 遊びに行く(観光・友達・用事) ／ Salir a divertirse', e: 14 * 60, cat: 'play' },
     { g: 14 * 60, t: '🆓 フリー(休憩・何でも) ／ Libre', e: 16 * 60, cat: 'free' },
     { g: 16 * 60, t: '🤖 AI作業(軽め・週の振り返り) ／ Trabajo con IA', e: 17 * 60, cat: 'ai' },
     { g: 18 * 60, t: '🍽️ 晩ごはん ／ Cena', cat: 'meal' },
