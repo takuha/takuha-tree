@@ -401,7 +401,7 @@
       </div>
       <div class="card">
         <h2>🗓️ Citas 30min×6 ／ アポ枠<span class="badge" id="apoCount"></span></h2>
-        <div class="legend">🌙 <b>Local 20:00–22:30</b> = <b>Japón 11:00–13:30</b>. Franjas para clientes de Japón. Toca para reservar.<br>🌙 <b>現地20:00–22:30</b>＝<b>日本11:00–13:30</b>。日本のお客さん枠。タップで予約。</div>
+        <div class="legend">🌙 <b>11:00–13:30</b>. Franjas para clientes de Japón. Toca para reservar.<br>🌙 <b>11:00–13:30</b>。日本のお客さん枠。タップで予約。</div>
         <div id="slots"></div>
       </div>
     </div>
@@ -498,8 +498,8 @@
         <div><label class="fldlab" for="evTime">時刻</label><input type="time" id="evTime" value="14:00"></div>
         <div style="flex:0 0 150px"><label class="fldlab" for="evTz">どの時間？</label>
           <select id="evTz">
-            <option value="jp">Japón ／ 日本時間</option>
-            <option value="gt">Local (GT) ／ 現地</option>
+            <option value="jp">Japón ／ 日本時間（いつもの）</option>
+            <option value="gt">Guatemala ／ GT換算で入力</option>
           </select></div>
       </div>
       <label class="fldlab" for="evDur">長さ</label>
@@ -625,7 +625,7 @@ function eventsForBars(ds){
   const out=[];
   (DB.events[ds]||[]).forEach(e=>out.push({g:e.gt,cat:e.cat||'free',t:e.title,apo:false,k:'e'+e.id}));
   const bk=DB.appts[ds]||{};
-  Object.keys(bk).forEach(i=>{if(APO[i])out.push({g:APO[i].gt,cat:'apo',t:bk[i].name,apo:true,k:'a'+i});});
+  Object.keys(bk).forEach(i=>{if(APO[i])out.push({g:APO[i].jp,cat:'apo',t:bk[i].name,apo:true,k:'a'+i});});
   return out.sort((a,b)=>a.g-b.g);
 }
 function renderMonth(dir){
@@ -723,7 +723,7 @@ function renderTimeline(){
   const evs=(DB.events[SEL]||[]).map(e=>({g:e.gt,t:e.title,user:true,id:e.id,
     e:e.dur?((e.gt+e.dur)%1440):0,cat:e.cat||'free'}));
   const bk=DB.appts[SEL]||{};
-  const apoRows=Object.keys(bk).filter(i=>APO[i]).map(i=>({g:APO[i].gt,e:APO[i].gt+30,
+  const apoRows=Object.keys(bk).filter(i=>APO[i]).map(i=>({g:APO[i].jp,e:APO[i].jp+30,
     t:'🤝 アポ: '+bk[i].name,cat:'apo',apoI:+i}));
   const all=tl.concat(evs,apoRows).sort((a,b)=>a.g-b.g);
   const gN=nowParts(9);const nowMin=gN.getHours()*60+gN.getMinutes();
@@ -735,7 +735,7 @@ function renderTimeline(){
     const rng=r.e?`〜${m2hm(r.e)}`:'';
     const cat=catOf(r.cat);
     const isNow=isToday&&!done&&r.g<=nowMin&&(r.e?nowMin<r.e:nowMin<r.g+30);
-    const clk=r.user?`onclick="openEdit(${r.id})"`:(r.apoI!=null?`onclick="openApo(${r.apoI})"`:'');
+    const clk=r.user?`onclick="openEdit('${r.id}')"`:(r.apoI!=null?`onclick="openApo(${r.apoI})"`:'');
     const tag=(r.user||r.apoI!=null)?'button':'div';
     h+=`<div class="row${r.fix?' fix':''}${isNow?' nowrow':''}${done?' isdone':''}">
       <div class="rtime"><span class="g">${m2hm(r.g)}</span></div>
@@ -755,7 +755,7 @@ function renderSlots(){
   const book=DB.appts[SEL]||{};let n=0,h='';
   APO.forEach(s=>{const b=book[s.i];if(b)n++;
     h+=`<button type="button" class="slot ${b?'booked':'empty'}" onclick="openApo(${s.i})">
-      <span class="times"><span class="jpt">${m2hm(s.jp)}</span><span class="gtt">Local ${m2hm(s.gt)}</span></span>
+      <span class="times"><span class="jpt">${m2hm(s.jp)}</span></span>
       <span class="b">${b?`<span class="name">${esc(b.name)}</span>${b.memo?`<span class="memo">${esc(b.memo)}</span>`:''}`:'＋ Libre ／ 空き'}</span>
       <span class="ico">${b?'✓':'＋'}</span></button>`;});
   document.getElementById('slots').innerHTML=h;
@@ -768,7 +768,7 @@ function renderSlots(){
 let curSlot=null;
 function openApo(i){curSlot=i;const s=APO[i];const b=(DB.appts[SEL]||{})[i];
   apoTitle.textContent=b?'アポ編集 ／ Editar cita':'アポ予約 ／ Reservar cita';
-  apoSub.textContent=`🇯🇵 ${m2hm(s.jp)}〜${m2hm(s.jp+30)}　/　🇬🇹 ${m2hm(s.gt)}〜${m2hm(s.gt+30)}`;
+  apoSub.textContent=`${m2hm(s.jp)}〜${m2hm(s.jp+30)}`;
   apoName.value=b?b.name:'';apoMemo.value=b&&b.memo?b.memo:'';
   apoDel.style.display=b?'block':'none';
   ovApo.classList.add('show');setTimeout(()=>apoName.focus(),140);}
@@ -816,12 +816,12 @@ function openAdd(){
   ovAdd.classList.add('show');setTimeout(()=>document.getElementById('evTitle').focus(),140);
 }
 function openEdit(id){
-  const e=(DB.events[SEL]||[]).find(x=>x.id===id);if(!e)return;
+  const e=(DB.events[SEL]||[]).find(x=>String(x.id)===String(id));if(!e)return;
   editingId=id;editingRangeId=null;curCat=e.cat||'ai';
   addTitle.textContent='予定を編集 ／ Editar';
   const[y,mo,d]=SEL.split('-').map(Number);addSub.textContent=`${mo}/${d} (${WKJ[dow(SEL)]})`;
   document.getElementById('evTitle').value=e.title;
-  document.getElementById('evTime').value=m2hm(gt2jp(e.gt));
+  document.getElementById('evTime').value=m2hm(e.gt);
   document.getElementById('evTz').value='jp';
   document.getElementById('evDur').value=String(e.dur||0);
   addDel.style.display='block';
@@ -862,10 +862,10 @@ function saveEvent(){
   const v=document.getElementById('evTime').value;
   if(!v){toast('時刻を入れてね');return;}
   const[hh,mm]=v.split(':').map(Number);const min=hh*60+mm;
-  const tz=document.getElementById('evTz').value;const gt=tz==='jp'?jp2gt(min):min;
+  const tz=document.getElementById('evTz').value;const gt=tz==='gt'?gt2jp(min):min;
   const dur=Number(document.getElementById('evDur').value)||0;
   DB.events[SEL]=DB.events[SEL]||[];
-  if(editingId){const e=DB.events[SEL].find(x=>x.id===editingId);
+  if(editingId){const e=DB.events[SEL].find(x=>String(x.id)===String(editingId));
     if(e){e.title=t;e.gt=((gt%1440)+1440)%1440;e.dur=dur;e.cat=curCat;}}
   else DB.events[SEL].push({id:Date.now(),title:t,gt:((gt%1440)+1440)%1440,dur,cat:curCat});
   save();closeAdd();refresh();toast('予定を保存しました');
@@ -876,7 +876,7 @@ function delEditing(){
     save();closeAdd();refresh();toast('期間の予定を削除しました');return;
   }
   if(editingId){
-    DB.events[SEL]=(DB.events[SEL]||[]).filter(e=>e.id!==editingId);
+    DB.events[SEL]=(DB.events[SEL]||[]).filter(e=>String(e.id)!==String(editingId));
     if(!DB.events[SEL].length)delete DB.events[SEL];
     if(DB.done[SEL])delete DB.done[SEL]['e'+editingId];
     save();closeAdd();refresh();toast('予定を削除しました');
@@ -902,7 +902,7 @@ function renderFeed(){
   dates.forEach(ds=>{if(ds<today)return;
     (DB.events[ds]||[]).forEach(e=>rows.push({ds,g:e.gt,t:e.title,cat:e.cat||'free'}));
     const bk=DB.appts[ds]||{};
-    Object.keys(bk).forEach(i=>{if(APO[i])rows.push({ds,g:APO[i].gt,t:'🤝 '+bk[i].name,cat:'apo'});});
+    Object.keys(bk).forEach(i=>{if(APO[i])rows.push({ds,g:APO[i].jp,t:'🤝 '+bk[i].name,cat:'apo'});});
   });
   /* 期間予定も今後の予定として並べる（開始日で1行） */
   DB.ranges.forEach(r=>{if(r.end<today)return;
