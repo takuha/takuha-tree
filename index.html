@@ -110,6 +110,9 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;letter-spacing:-.3px}
   .bar.apo{box-shadow:0 0 0 1px rgba(255,255,255,.3) inset}
   .bar.done{opacity:.45}
+  .bar.biz,.spanbar.biz{box-shadow:0 0 0 1.5px #ffd166 inset}
+  .cell .bizmark{position:absolute;top:4px;right:5px;font-size:10px;line-height:1;
+    filter:drop-shadow(0 0 1px rgba(0,0,0,.5))}
   .rbar{font-size:8px;font-weight:800;line-height:1.35;border-radius:5px;padding:1.5px 4px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px dashed;letter-spacing:-.3px}
   .rbar.rt-A{color:var(--rt-a-ink);background:var(--rt-a-bg);border-color:var(--rt-a-bd)}
@@ -643,21 +646,24 @@ function renderMonth(dir){
     if(ds===today)cls+=' today';
     if(ds===SEL)cls+=' sel';
     const evs=eventsForBars(ds);
+    /* ビジネス予定は枠から溢れて「+N」に隠れないよう常に先頭優先で表示 */
+    evs.sort((a,b)=>((a.cat==='biz')===(b.cat==='biz'))?a.g-b.g:(a.cat==='biz'?-1:1));
     let bars='';
     const rgs=rangesFor(ds);
     rgs.forEach(r=>{const c=catOf(r.cat);
       const st=ds===r.start,en=ds===r.end;
       /* 週頭・月頭でもタイトルを出し直す（帯が長いときに何の予定か分かるように） */
       const label=(st||w===0||d===1)?esc(r.title):'&nbsp;';
-      bars+=`<span class="spanbar${st?' st':''}${en?' en':''}" style="background:${c.bar}">${label}</span>`;});
+      bars+=`<span class="spanbar${st?' st':''}${en?' en':''}${r.cat==='biz'?' biz':''}" style="background:${c.bar}">${label}</span>`;});
     if(DB.prefs.showRoutine){const ty=dayType(ds);
       bars+=`<span class="rbar rt-${ty}">${ROUTINE_LABEL[ty]}</span>`;}
     const slots=Math.max(1,(DB.prefs.showRoutine?2:3)-rgs.length);
     evs.slice(0,slots).forEach(e=>{const c=catOf(e.cat);
-      bars+=`<span class="bar${e.apo?' apo':''}${isDone(ds,e.k)?' done':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</span>`;});
+      bars+=`<span class="bar${e.apo?' apo':''}${e.cat==='biz'?' biz':''}${isDone(ds,e.k)?' done':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</span>`;});
     const more=evs.length>slots?`<span class="more">+${evs.length-slots}</span>`:'';
+    const hasBiz=evs.some(e=>e.cat==='biz')||rgs.some(r=>r.cat==='biz');
     h+=`<button type="button" class="${cls}" onclick="openDay('${ds}')" aria-label="${mYM.m+1}月${d}日">
-      <span class="dn">${d}</span>
+      <span class="dn">${d}</span>${hasBiz?'<span class="bizmark">💰</span>':''}
       <span class="bars">${bars}${more}</span></button>`;
   }
   const g=document.getElementById('mGrid');
