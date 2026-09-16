@@ -928,7 +928,7 @@ function renderFeed(){
     }
     const c=catOf(r.cat);
     const time=r.span?'<div class="j">終日</div>':
-      `<div class="j">${m2hm(gt2jp(r.g))}</div><div class="g">GT ${m2hm(r.g)}</div>`;
+      `<div class="j">${m2hm(r.g)}</div>`;
     h+=`<button type="button" class="fitem" onclick="openDay('${r.ds}')">
       <span class="fbar" style="background:${c.bar}"></span>
       <span class="ft">${time}</span>
