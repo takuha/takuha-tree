@@ -3,7 +3,7 @@
      HTML・sync.json … network-first（更新を取りこぼさない。オフライン時だけキャッシュ）
      その他 … cache-first（アイコン等は変わらないので速さ優先）
    キャッシュ名の版を上げると古いキャッシュは activate 時に消える。 */
-const VERSION = 'tim-v3';
+const VERSION = 'tim-v4';
 const SHELL = [
   './',
   './index.html',

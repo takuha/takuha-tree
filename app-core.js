@@ -31,7 +31,7 @@ function daysBetween(a, b) {
   const [ay, am, ad] = a.split('-').map(Number), [by, bm, bd] = b.split('-').map(Number);
   return Math.round((new Date(by, bm - 1, bd) - new Date(ay, am - 1, ad)) / 86400000);
 }
-const ROUTINE_LABEL = { A: '🍲営業日', W: '🎉遊び' };
+const ROUTINE_LABEL = { A: '💼平日', W: '🎉遊び' };
 const DAYTYPE_NAME = { A: '平日', W: '週末' };
 
 /* ===== categories ===== */
@@ -54,10 +54,11 @@ const CAT = {
 const catOf = k => CAT[k] || CAT.free;
 
 /* ===== いつもの時間割（2026-09-16〜：大阪基準・分は大阪の実時刻そのもの）
-   スペイン語授業終了（Máximo Nivel 2026-08-28卒業）＋しゃぶしゃぶ「青柳」開店(10/1)に伴い作り直し。
-   平日は火だけ別枠にする理由がなくなったので type は A(平日)／W(週末)の2種類のみ。 ===== */
+   スペイン語授業終了（Máximo Nivel 2026-08-28卒業）に伴い作り直し。
+   平日は火だけ別枠にする理由がなくなったので type は A(平日)／W(週末)の2種類のみ。
+   ★2026-09-22訂正：青柳は本人が店に立つわけではない（現場はこうちゃん）ので
+   「18-24時 店に立つ」固定枠は廃止。夕方以降は固定枠を作らずフリーに戻した。 ===== */
 function timeline(type) {
-  const shop = { g: 18 * 60, e: 24 * 60, t: '🍲 青柳で店に立つ ／ En el restaurante Aoyagi', fix: true, cat: 'work' };
   if (type === 'A') return [
     { g: 6 * 60,       t: '📲 SNS投稿確認＋撮影 ／ Revisar SNS + grabar', cat: 'sns' },
     { g: 7 * 60,       t: '💪 筋トレ・散歩1h ／ Gym / caminata', cat: 'train' },
@@ -65,11 +66,11 @@ function timeline(type) {
     { g: 9 * 60,       t: '🤖 AI作業・案件対応 ／ Trabajo con IA', e: 12 * 60, cat: 'ai' },
     { g: 12 * 60,      t: '🍴 ランチ ／ Almuerzo', cat: 'meal' },
     { g: 13 * 60,      t: '🎬 編集・マーケ・SNS運用 ／ Edición + marketing', e: 17 * 60, cat: 'film' },
-    { g: 17 * 60,      t: '🚗 店へ移動・仕込み確認 ／ Ir al restaurante', e: 18 * 60, cat: 'work' },
-    { ...shop },
-    { g: 24 * 60,      t: '🚗 帰宅 ／ Volver a casa', cat: 'self' },
-    { g: 24 * 60 + 30, t: '🪞 夜の振り返り(5分) ／ Reflexión', cat: 'self' },
-    { g: 25 * 60,      t: '😴 就寝(1:00–6:00, 5h) ／ A dormir', cat: 'self' },
+    { g: 17 * 60,      t: '🆓 フリー ／ Libre', e: 19 * 60, cat: 'free' },
+    { g: 19 * 60,      t: '🍳 晩ごはん ／ Cena', cat: 'meal' },
+    { g: 20 * 60,      t: '🆓 フリー(何でも) ／ Libre', e: 22 * 60, cat: 'free' },
+    { g: 22 * 60,      t: '🪞 夜の振り返り(5分) ／ Reflexión', cat: 'self' },
+    { g: 22 * 60 + 30, t: '😴 就寝(22:30–6:00, 7.5h) ／ A dormir', cat: 'self' },
   ];
   return [
     { g: 7 * 60,  t: '🌅 ゆっくり起床・撮りだめ ／ Despertar tranquilo', cat: 'sns' },

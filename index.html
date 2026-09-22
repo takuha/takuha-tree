@@ -703,7 +703,7 @@ function renderDay(dir){
   const dt=document.getElementById('dType');
   dt.className='daytype '+(type==='A'?'dt-A':'dt-W');
   dt.textContent=type==='A'?'平日':'週末';
-  document.getElementById('tlBadge').textContent=type==='A'?'店に立つ日':'遊ぶ日';
+  document.getElementById('tlBadge').textContent=type==='A'?'集中する日':'遊ぶ日';
   renderDayRanges();renderTimeline();renderSlots();
   const m=document.getElementById('dMask');
   if(dir){m.classList.remove('slideL','slideR');void m.offsetWidth;
