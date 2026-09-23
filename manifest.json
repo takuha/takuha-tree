@@ -2,7 +2,7 @@
   "id": "./",
   "name": "TIM",
   "short_name": "TIM",
-  "description": "予定・時差対応カレンダー（🇬🇹⇄🇯🇵 15h）",
+  "description": "予定カレンダー",
   "lang": "ja",
   "dir": "ltr",
   "start_url": "./",
@@ -27,7 +27,7 @@
     },
     {
       "name": "改善スタジオ",
-      "short_name": "Studio",
+      "short_name": "スタジオ",
       "url": "./studio/",
       "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }

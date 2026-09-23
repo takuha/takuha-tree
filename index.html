@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="TIM">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="予定・時差対応カレンダー（🇬🇹グアテマラ ⇄ 🇯🇵日本 15h）">
+<meta name="description" content="予定カレンダー">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="apple-touch-icon" sizes="167x167" href="icons/icon-167.png">
@@ -46,8 +46,6 @@
   .clock .lab{font-size:10px;opacity:.92;letter-spacing:.4px;font-weight:700}
   .clock .t{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2;letter-spacing:-.5px}
   .clock .d{font-size:10px;opacity:.86}
-  .clocks .arrow{align-self:center;font-size:15px;opacity:.85;flex:0 0 auto}
-  .diffnote{text-align:center;font-size:10px;opacity:.9;margin-top:9px;position:relative;z-index:1;line-height:1.5}
 
   /* ============================================================
      views
@@ -186,25 +184,6 @@
   .rchk.on{background:var(--brand);border-color:var(--brand);color:var(--brand-on)}
   .rchk:active{transform:scale(.9)}
 
-  /* apo slots */
-  .legend{font-size:11.5px;color:var(--warn-ink);margin-bottom:12px;background:var(--warn-bg);
-    padding:9px 11px;border-radius:var(--r-md);border-left:3px solid var(--warn-line);line-height:1.6}
-  .slot{display:flex;align-items:center;gap:11px;padding:11px;border:1px solid var(--line);
-    border-radius:var(--r-md);margin-bottom:8px;transition:.12s var(--ease);background:var(--surface-2);
-    width:100%;text-align:left;color:inherit}
-  .slot:active{transform:scale(.99)}
-  .slot .times{text-align:center;min-width:68px}
-  .slot .times .jpt{font-size:15px;font-weight:800;color:var(--jp);font-variant-numeric:tabular-nums}
-  .slot .times .gtt{font-size:10px;color:var(--brand-ink)}
-  .slot .b{flex:1;min-width:0}
-  .slot.empty .b{color:var(--mut);font-size:13px}
-  .slot.booked{background:var(--ok-bg);border-color:var(--brand)}
-  .slot.booked .name{font-weight:800;font-size:14px;color:var(--brand-ink);
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .slot.booked .memo{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .slot .ico{font-size:18px;color:var(--mut)}
-  .slot.booked .ico{color:var(--brand)}
-
   /* ===== feed ===== */
   .feed-empty{text-align:center;color:var(--mut);font-size:13px;padding:36px 12px;line-height:1.8}
   .fday{margin-bottom:18px}
@@ -327,23 +306,14 @@
     <div class="brand">
       <span class="logo" aria-hidden="true">⏱️</span>
       <h1>TIM</h1>
-      <span class="tag">🇬🇹⇄🇯🇵 15h</span>
       <button class="themebtn" id="themeBtn" onclick="cycleTheme()" aria-label="テーマ切替">🌗</button>
     </div>
     <div class="clocks">
       <div class="clock">
-        <div class="lab">🇬🇹 Guatemala</div>
-        <div class="t" id="cgt">--:--</div>
-        <div class="d" id="dgt"></div>
-      </div>
-      <span class="arrow" aria-hidden="true">→</span>
-      <div class="clock">
-        <div class="lab">🇯🇵 Japón 日本</div>
         <div class="t" id="cjp">--:--</div>
         <div class="d" id="djp"></div>
       </div>
     </div>
-    <div class="diffnote">⏰ Japón va +15h adelante ／ 日本が15時間先行　Japón = local + 15h</div>
   </header>
 
   <!-- ===== VIEW: MONTH ===== -->
@@ -351,7 +321,7 @@
     <div class="mhead">
       <button class="iconbtn" onclick="shiftMonth(-1)" aria-label="前の月">‹</button>
       <div class="mlabel"><span class="yr" id="mYear">2026</span><span id="mLabel">6月</span></div>
-      <button class="pillbtn" onclick="goToday()">Hoy 今日</button>
+      <button class="pillbtn" onclick="goToday()">今日</button>
       <button class="iconbtn" onclick="shiftMonth(1)" aria-label="次の月">›</button>
     </div>
 
@@ -392,24 +362,19 @@
     <div class="day-mask" id="dMask">
       <div class="dayranges" id="dayRanges"></div>
       <div class="card">
-        <h2>📋 Horario del día ／ 1日の時間割<span class="badge" id="tlBadge"></span></h2>
+        <h2>📋 1日の時間割<span class="badge" id="tlBadge"></span></h2>
         <div class="prog">
           <div class="track"><div class="fill" id="progFill" style="width:0%"></div></div>
           <span class="pct" id="progPct">0 / 0 完了</span>
         </div>
         <div class="tl" id="timeline"></div>
       </div>
-      <div class="card">
-        <h2>🗓️ Citas 30min×6 ／ アポ枠<span class="badge" id="apoCount"></span></h2>
-        <div class="legend">🌙 <b>11:00–13:30</b>. Franjas para clientes de Japón. Toca para reservar.<br>🌙 <b>11:00–13:30</b>。日本のお客さん枠。タップで予約。</div>
-        <div id="slots"></div>
-      </div>
     </div>
   </section>
 
   <!-- ===== VIEW: FEED ===== -->
   <section class="view" id="v-feed" aria-label="今後の予定">
-    <div class="mhead"><div class="mlabel" style="text-align:left;font-size:18px">📰 Próximos ／ 今後の予定</div></div>
+    <div class="mhead"><div class="mlabel" style="text-align:left;font-size:18px">📰 今後の予定</div></div>
     <div class="seg" role="group" aria-label="表示の絞り込み">
       <button id="feed-all" onclick="setFeedFilter('all')">すべて</button>
       <button id="feed-biz" onclick="setFeedFilter('biz')">💰 ビジネスのみ</button>
@@ -420,21 +385,7 @@
   <!-- ===== VIEW: TOOLS ===== -->
   <section class="view" id="v-tools" aria-label="ツール">
     <div class="card">
-      <h2>🔄 Conversor de husos ／ 時差コンバーター</h2>
-      <div class="conv">
-        <div class="fld"><label for="convTime">Hora ／ 時刻</label>
-          <input class="field" type="time" id="convTime" value="11:00"></div>
-        <div class="fld" style="flex:0 0 160px"><label for="convTz">¿Qué huso? ／ どの時間？</label>
-          <select class="field" id="convTz">
-            <option value="jp">Japón ／ 日本時間</option>
-            <option value="gt">Local (GT) ／ 現地</option>
-          </select></div>
-      </div>
-      <div class="convout" id="convOut" role="status"></div>
-    </div>
-
-    <div class="card">
-      <h2>🧪 Studio ／ 改善スタジオ</h2>
+      <h2>🧪 改善スタジオ</h2>
       <a class="biglink" href="studio/">
         <span class="bi" aria-hidden="true">📈</span>
         <span class="bt"><b>予定を分析して改善案を出す</b>
@@ -444,7 +395,7 @@
     </div>
 
     <div class="card">
-      <h2>🎨 Apariencia ／ 見た目</h2>
+      <h2>🎨 見た目</h2>
       <div class="seg" role="group" aria-label="テーマ">
         <button id="th-auto" onclick="setTheme('auto')">🌗 自動</button>
         <button id="th-light" onclick="setTheme('light')">☀️ ライト</button>
@@ -454,15 +405,14 @@
     </div>
 
     <div class="card">
-      <h2>💾 Datos ／ データ</h2>
+      <h2>💾 データ</h2>
       <div class="foot">
-        <button onclick="exportData()">📤 Exportar ／ 書出</button>
-        <button onclick="document.getElementById('imp').click()">📥 Importar ／ 読込</button>
+        <button onclick="exportData()">📤 書出</button>
+        <button onclick="document.getElementById('imp').click()">📥 読込</button>
         <input type="file" id="imp" accept=".json,application/json" style="display:none" onchange="importData(event)">
       </div>
       <div class="note">
         データは端末に自動保存され、サーバーには送りません。<br>
-        Los datos se guardan solo en este navegador.<br>
         ホーム画面に追加でアプリ化 📱　<span id="verNote"></span>
       </div>
     </div>
@@ -473,17 +423,17 @@
 <button class="fab" onclick="openAdd()" aria-label="予定を追加">＋</button>
 
 <nav class="nav" aria-label="メインナビ">
-  <button class="on" id="n-month" onclick="showView('month')"><span class="i" aria-hidden="true">📅</span>Mes 月</button>
-  <button id="n-day" onclick="showView('day')"><span class="i" aria-hidden="true">📋</span>Día 日</button>
-  <button id="n-feed" onclick="showView('feed')"><span class="i" aria-hidden="true">📰</span>Feed</button>
-  <button id="n-tools" onclick="showView('tools')"><span class="i" aria-hidden="true">🔄</span>Zona</button>
+  <button class="on" id="n-month" onclick="showView('month')"><span class="i" aria-hidden="true">📅</span>月</button>
+  <button id="n-day" onclick="showView('day')"><span class="i" aria-hidden="true">📋</span>日</button>
+  <button id="n-feed" onclick="showView('feed')"><span class="i" aria-hidden="true">📰</span>予定</button>
+  <button id="n-tools" onclick="showView('tools')"><span class="i" aria-hidden="true">🔧</span>ツール</button>
 </nav>
 
 <!-- ===== ADD / EDIT SHEET ===== -->
 <div class="ov" id="ovAdd" role="dialog" aria-modal="true" aria-labelledby="addTitle">
   <div class="sheet">
     <div class="grip"></div>
-    <h3 id="addTitle">Agregar ／ 予定を追加</h3>
+    <h3 id="addTitle">予定を追加</h3>
     <div class="sub" id="addSub"></div>
 
     <div class="seg" role="group" aria-label="予定の型">
@@ -491,32 +441,27 @@
       <button id="md-range" onclick="setEvMode('range')">📆 期間の予定</button>
     </div>
 
-    <input type="text" id="evTitle" placeholder="Nombre ／ 予定名（例: llamada / Mi Amigo）">
+    <input type="text" id="evTitle" placeholder="予定名（例: たかさんと電話）">
 
     <div id="modeTime">
       <div class="frmrow">
         <div><label class="fldlab" for="evTime">時刻</label><input type="time" id="evTime" value="14:00"></div>
-        <div style="flex:0 0 150px"><label class="fldlab" for="evTz">どの時間？</label>
-          <select id="evTz">
-            <option value="jp">Japón ／ 日本時間（いつもの）</option>
-            <option value="gt">Guatemala ／ GT換算で入力</option>
-          </select></div>
       </div>
       <label class="fldlab" for="evDur">長さ</label>
       <select id="evDur">
-        <option value="30">30 min ／ 30分</option>
-        <option value="60" selected>1 hora ／ 1時間</option>
-        <option value="90">1.5 h ／ 1.5時間</option>
-        <option value="120">2 h ／ 2時間</option>
-        <option value="180">3 h ／ 3時間</option>
-        <option value="0">Sin duración ／ 時間なし</option>
+        <option value="30">30分</option>
+        <option value="60" selected>1時間</option>
+        <option value="90">1.5時間</option>
+        <option value="120">2時間</option>
+        <option value="180">3時間</option>
+        <option value="0">時間なし</option>
       </select>
     </div>
 
     <div id="modeRange" style="display:none">
       <div class="frmrow">
-        <div><label class="fldlab" for="rgStart">開始 ／ Desde</label><input type="date" id="rgStart"></div>
-        <div><label class="fldlab" for="rgEnd">終了 ／ Hasta</label><input type="date" id="rgEnd"></div>
+        <div><label class="fldlab" for="rgStart">開始</label><input type="date" id="rgStart"></div>
+        <div><label class="fldlab" for="rgEnd">終了</label><input type="date" id="rgEnd"></div>
       </div>
     </div>
 
@@ -524,23 +469,7 @@
     <div class="acts">
       <button class="cancel" onclick="closeAdd()">閉じる</button>
       <button class="del" id="addDel" onclick="delEditing()">削除</button>
-      <button class="save" onclick="saveEvent()">Guardar 保存</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== APO SHEET ===== -->
-<div class="ov" id="ovApo" role="dialog" aria-modal="true" aria-labelledby="apoTitle">
-  <div class="sheet">
-    <div class="grip"></div>
-    <h3 id="apoTitle">Reservar cita ／ アポを予約</h3>
-    <div class="sub" id="apoSub"></div>
-    <input type="text" id="apoName" placeholder="Nombre / asunto ／ お名前・用件">
-    <textarea id="apoMemo" placeholder="Nota (opcional) ／ メモ（任意）"></textarea>
-    <div class="acts">
-      <button class="cancel" onclick="closeApo()">閉じる</button>
-      <button class="del" id="apoDel" onclick="delBooking()">削除</button>
-      <button class="save" onclick="saveBooking()">Guardar 保存</button>
+      <button class="save" onclick="saveEvent()">保存</button>
     </div>
   </div>
 </div>
@@ -552,11 +481,9 @@
 /* 時差・日付・カテゴリ・いつもの時間割・保存データは app-core.js が持つ。
    ここは画面まわりだけ。 */
 function liveClocks(){
-  const g=nowParts(-6), j=nowParts(9);
-  cgt.textContent=pad(g.getHours())+':'+pad(g.getMinutes());
+  const j=nowParts(9);
   cjp.textContent=pad(j.getHours())+':'+pad(j.getMinutes());
-  dgt.textContent=(g.getMonth()+1)+'/'+g.getDate()+'('+WK[g.getDay()]+')';
-  djp.textContent=(j.getMonth()+1)+'/'+j.getDate()+'('+WK[j.getDay()]+')';
+  djp.textContent=(j.getMonth()+1)+'/'+j.getDate()+'('+WKJ[j.getDay()]+')';
 }
 
 /* 保存に失敗したら黙って落とさず知らせる（容量オーバーくらいしか起きないが） */
@@ -611,7 +538,7 @@ function showView(v){
   if(v==='month')renderMonth();
   if(v==='day')renderDay();
   if(v==='feed')renderFeed();
-  if(v==='tools'){runConv();applyTheme();}
+  if(v==='tools'){applyTheme();}
   window.scrollTo(0,0);
 }
 
@@ -624,12 +551,10 @@ function goToday(){SEL=todayStr();const t=SEL.split('-');mYM={y:+t[0],m:+t[1]-1}
 function eventsForBars(ds){
   const out=[];
   (DB.events[ds]||[]).forEach(e=>out.push({g:e.gt,cat:e.cat||'free',t:e.title,apo:false,k:'e'+e.id}));
-  const bk=DB.appts[ds]||{};
-  Object.keys(bk).forEach(i=>{if(APO[i])out.push({g:APO[i].jp,cat:'apo',t:bk[i].name,apo:true,k:'a'+i});});
   return out.sort((a,b)=>a.g-b.g);
 }
 function renderMonth(dir){
-  document.getElementById('wdRow').innerHTML=WK.map((w,i)=>`<span class="s${i}">${w[0]}${WKJ[i]}</span>`).join('');
+  document.getElementById('wdRow').innerHTML=WKJ.map((w,i)=>`<span class="s${i}">${w}</span>`).join('');
   document.getElementById('mLabel').textContent=(mYM.m+1)+'月';
   document.getElementById('mYear').textContent=mYM.y;
   const rt=document.getElementById('rtToggle');
@@ -672,7 +597,7 @@ function renderMonth(dir){
 }
 function renderLegend(){
   const lr=document.getElementById('lgRoutine');
-  if(lr)lr.innerHTML=[['A','🇪🇸 授業（月水木金）'],['B','📚 自習（火）'],['W','🎉 遊び（土日）']]
+  if(lr)lr.innerHTML=[['A','💼 平日'],['W','🎉 週末']]
     .map(([ty,label])=>`<span class="lgchip rt-${ty}">${label}</span>`).join('');
   const lc=document.getElementById('lgCats');
   if(lc)lc.innerHTML=['apo','biz','work','talk','study','ai','film','sns','train','meal','free','self']
@@ -698,13 +623,13 @@ function shiftDay(n){SEL=addDays(SEL,n);const t=SEL.split('-');mYM={y:+t[0],m:+t
 function renderDay(dir){
   const w=dow(SEL),type=dayType(SEL);
   const[y,mo,d]=SEL.split('-').map(Number);
-  document.getElementById('dBig').textContent=`${mo}/${d} (${WK[w]}·${WKJ[w]})`;
-  document.getElementById('dSm').textContent=`${y}　${SEL===todayStr()?'· Hoy 今日':''}`;
+  document.getElementById('dBig').textContent=`${mo}/${d} (${WKJ[w]})`;
+  document.getElementById('dSm').textContent=`${y}　${SEL===todayStr()?'· 今日':''}`;
   const dt=document.getElementById('dType');
   dt.className='daytype '+(type==='A'?'dt-A':'dt-W');
   dt.textContent=type==='A'?'平日':'週末';
   document.getElementById('tlBadge').textContent=type==='A'?'集中する日':'遊ぶ日';
-  renderDayRanges();renderTimeline();renderSlots();
+  renderDayRanges();renderTimeline();
   const m=document.getElementById('dMask');
   if(dir){m.classList.remove('slideL','slideR');void m.offsetWidth;
     m.classList.add(dir==='L'?'slideL':'slideR');}
@@ -722,10 +647,7 @@ function renderTimeline(){
   const tl=timeline(type).slice();
   const evs=(DB.events[SEL]||[]).map(e=>({g:e.gt,t:e.title,user:true,id:e.id,
     e:e.dur?((e.gt+e.dur)%1440):0,cat:e.cat||'free'}));
-  const bk=DB.appts[SEL]||{};
-  const apoRows=Object.keys(bk).filter(i=>APO[i]).map(i=>({g:APO[i].jp,e:APO[i].jp+30,
-    t:'🤝 アポ: '+bk[i].name,cat:'apo',apoI:+i}));
-  const all=tl.concat(evs,apoRows).sort((a,b)=>a.g-b.g);
+  const all=tl.concat(evs).sort((a,b)=>a.g-b.g);
   const gN=nowParts(9);const nowMin=gN.getHours()*60+gN.getMinutes();
   const isToday=SEL===todayStr();
   let h='',doneN=0;
@@ -735,8 +657,8 @@ function renderTimeline(){
     const rng=r.e?`〜${m2hm(r.e)}`:'';
     const cat=catOf(r.cat);
     const isNow=isToday&&!done&&r.g<=nowMin&&(r.e?nowMin<r.e:nowMin<r.g+30);
-    const clk=r.user?`onclick="openEdit('${r.id}')"`:(r.apoI!=null?`onclick="openApo(${r.apoI})"`:'');
-    const tag=(r.user||r.apoI!=null)?'button':'div';
+    const clk=r.user?`onclick="openEdit('${r.id}')"`:'';
+    const tag=r.user?'button':'div';
     h+=`<div class="row${r.fix?' fix':''}${isNow?' nowrow':''}${done?' isdone':''}">
       <div class="rtime"><span class="g">${m2hm(r.g)}</span></div>
       <${tag} type="button" class="rbody" ${clk}>
@@ -751,35 +673,6 @@ function renderTimeline(){
   document.getElementById('progFill').style.width=pct+'%';
   document.getElementById('progPct').textContent=`${doneN} / ${all.length} 完了`;
 }
-function renderSlots(){
-  const book=DB.appts[SEL]||{};let n=0,h='';
-  APO.forEach(s=>{const b=book[s.i];if(b)n++;
-    h+=`<button type="button" class="slot ${b?'booked':'empty'}" onclick="openApo(${s.i})">
-      <span class="times"><span class="jpt">${m2hm(s.jp)}</span></span>
-      <span class="b">${b?`<span class="name">${esc(b.name)}</span>${b.memo?`<span class="memo">${esc(b.memo)}</span>`:''}`:'＋ Libre ／ 空き'}</span>
-      <span class="ico">${b?'✓':'＋'}</span></button>`;});
-  document.getElementById('slots').innerHTML=h;
-  document.getElementById('apoCount').textContent=`${n}/6 予約`;
-}
-
-/* ============================================================
-   APO sheet
-   ============================================================ */
-let curSlot=null;
-function openApo(i){curSlot=i;const s=APO[i];const b=(DB.appts[SEL]||{})[i];
-  apoTitle.textContent=b?'アポ編集 ／ Editar cita':'アポ予約 ／ Reservar cita';
-  apoSub.textContent=`${m2hm(s.jp)}〜${m2hm(s.jp+30)}`;
-  apoName.value=b?b.name:'';apoMemo.value=b&&b.memo?b.memo:'';
-  apoDel.style.display=b?'block':'none';
-  ovApo.classList.add('show');setTimeout(()=>apoName.focus(),140);}
-function closeApo(){ovApo.classList.remove('show');curSlot=null;}
-function saveBooking(){const name=apoName.value.trim();if(!name){apoName.focus();return;}
-  DB.appts[SEL]=DB.appts[SEL]||{};DB.appts[SEL][curSlot]={name,memo:apoMemo.value.trim()};
-  save();closeApo();refresh();toast('アポを保存しました');}
-function delBooking(){
-  if(DB.appts[SEL]){delete DB.appts[SEL][curSlot];
-    if(!Object.keys(DB.appts[SEL]).length)delete DB.appts[SEL];}
-  save();closeApo();refresh();toast('アポを削除しました');}
 
 /* ============================================================
    add / edit sheet (時刻の予定 と 期間の予定)
@@ -801,12 +694,11 @@ function setEvMode(m){
 }
 function openAdd(){
   editingId=null;editingRangeId=null;curCat='ai';
-  addTitle.textContent='予定を追加 ／ Agregar';
+  addTitle.textContent='予定を追加';
   const[y,mo,d]=SEL.split('-').map(Number);
   addSub.textContent=`${mo}/${d} (${WKJ[dow(SEL)]}) に追加`;
   document.getElementById('evTitle').value='';
   document.getElementById('evTime').value='14:00';
-  document.getElementById('evTz').value='jp';
   document.getElementById('evDur').value='60';
   document.getElementById('rgStart').value=SEL;
   document.getElementById('rgEnd').value=addDays(SEL,2);
@@ -818,11 +710,10 @@ function openAdd(){
 function openEdit(id){
   const e=(DB.events[SEL]||[]).find(x=>String(x.id)===String(id));if(!e)return;
   editingId=id;editingRangeId=null;curCat=e.cat||'ai';
-  addTitle.textContent='予定を編集 ／ Editar';
+  addTitle.textContent='予定を編集';
   const[y,mo,d]=SEL.split('-').map(Number);addSub.textContent=`${mo}/${d} (${WKJ[dow(SEL)]})`;
   document.getElementById('evTitle').value=e.title;
   document.getElementById('evTime').value=m2hm(e.gt);
-  document.getElementById('evTz').value='jp';
   document.getElementById('evDur').value=String(e.dur||0);
   addDel.style.display='block';
   /* 時刻の予定を期間に化けさせない */
@@ -832,7 +723,7 @@ function openEdit(id){
 function openEditRange(id){
   const r=DB.ranges.find(x=>String(x.id)===String(id));if(!r)return;
   editingId=null;editingRangeId=r.id;curCat=r.cat||'ai';
-  addTitle.textContent='期間の予定を編集 ／ Editar';
+  addTitle.textContent='期間の予定を編集';
   addSub.textContent=`${r.start} 〜 ${r.end}`;
   document.getElementById('evTitle').value=r.title;
   document.getElementById('rgStart').value=r.start;
@@ -861,8 +752,7 @@ function saveEvent(){
 
   const v=document.getElementById('evTime').value;
   if(!v){toast('時刻を入れてね');return;}
-  const[hh,mm]=v.split(':').map(Number);const min=hh*60+mm;
-  const tz=document.getElementById('evTz').value;const gt=tz==='gt'?gt2jp(min):min;
+  const[hh,mm]=v.split(':').map(Number);const gt=hh*60+mm;
   const dur=Number(document.getElementById('evDur').value)||0;
   DB.events[SEL]=DB.events[SEL]||[];
   if(editingId){const e=DB.events[SEL].find(x=>String(x.id)===String(editingId));
@@ -897,12 +787,10 @@ function renderFeed(){
   applyFeedFilterUI();
   const filter=DB.prefs.feedFilter||'all';
   const today=todayStr();
-  const dates=new Set([...Object.keys(DB.events),...Object.keys(DB.appts)]);
+  const dates=new Set(Object.keys(DB.events));
   let rows=[];
   dates.forEach(ds=>{if(ds<today)return;
     (DB.events[ds]||[]).forEach(e=>rows.push({ds,g:e.gt,t:e.title,cat:e.cat||'free'}));
-    const bk=DB.appts[ds]||{};
-    Object.keys(bk).forEach(i=>{if(APO[i])rows.push({ds,g:APO[i].jp,t:'🤝 '+bk[i].name,cat:'apo'});});
   });
   /* 期間予定も今後の予定として並べる（開始日で1行） */
   DB.ranges.forEach(r=>{if(r.end<today)return;
@@ -912,8 +800,8 @@ function renderFeed(){
   const el=document.getElementById('feedList');
   if(!rows.length){
     el.innerHTML=filter==='biz'
-      ?'<div class="feed-empty">ビジネスの予定はまだありません ／ Aún no hay eventos de negocio.<br>＋ボタンで予定を追加するとき「💰ビジネス」を選ぶとここに出るよ</div>'
-      :'<div class="feed-empty">まだ予定・アポがありません ／ Aún no hay eventos.<br>＋ボタンか月カレンダーから追加してね</div>';
+      ?'<div class="feed-empty">ビジネスの予定はまだありません。<br>＋ボタンで予定を追加するとき「💰ビジネス」を選ぶとここに出るよ</div>'
+      :'<div class="feed-empty">まだ予定がありません。<br>＋ボタンか月カレンダーから追加してね</div>';
     return;
   }
   let h='',lastDate='';
@@ -924,7 +812,7 @@ function renderFeed(){
       const[y,mo,d]=r.ds.split('-').map(Number);const w=dow(r.ds);
       const diff=daysBetween(today,r.ds);
       const rel=diff===0?'今日':diff===1?'明日':diff+'日後';
-      h+=`<div class="fday"><div class="fdate">${mo}/${d} (${WK[w]}·${WKJ[w]}) <span class="rel">${rel}</span></div>`;
+      h+=`<div class="fday"><div class="fdate">${mo}/${d} (${WKJ[w]}) <span class="rel">${rel}</span></div>`;
     }
     const c=catOf(r.cat);
     const time=r.span?'<div class="j">終日</div>':
@@ -937,23 +825,6 @@ function renderFeed(){
   });
   h+='</div>';
   el.innerHTML=h;
-}
-
-/* ============================================================
-   converter
-   ============================================================ */
-function runConv(){
-  const v=document.getElementById('convTime').value;if(!v)return;
-  const[hh,mm]=v.split(':').map(Number);const min=hh*60+mm;
-  const tz=document.getElementById('convTz').value;
-  let jp,gt;if(tz==='jp'){jp=min;gt=jp2gt(min);}else{gt=min;jp=gt2jp(min);}
-  const gN=((gt%1440)+1440)%1440;let warn='',bad=false;
-  if(gN>=9*60&&gN<13*60){warn='⚠️ 現地の授業中(9–13時) ／ Estás en clase';bad=true;}
-  else if(gN<6*60){warn='⚠️ 現地は深夜・睡眠時間 ／ Madrugada';bad=true;}
-  else if(gN>=20*60&&gN<22*60){warn='✅ 日本仕事の枠内・アポに最適 ／ Ideal para citas';}
-  const out=document.getElementById('convOut');
-  out.className='convout show'+(bad?' bad':'');
-  out.innerHTML=`<span class="big">🇯🇵 ${m2hm(jp)}</span> ＝ <span class="big">🇬🇹 ${m2hm(gt)}</span>${warn?'<br>'+warn:''}`;
 }
 
 /* ============================================================
@@ -1001,8 +872,8 @@ function importData(ev){
       if(merge){mergeInto(d);normalizeDB();}
       else{DB=d;normalizeDB();DB.prefs=Object.assign({},keep,DB.prefs);}
       save();refresh();applyTheme();
-      toast(merge?'追加しました ／ Añadido':'読み込みました ／ Importado');
-    }catch(_){toast('読み込めませんでした ／ Error');}
+      toast(merge?'追加しました':'読み込みました');
+    }catch(_){toast('読み込めませんでした');}
     ev.target.value='';
   };
   r.readAsText(f);
@@ -1028,16 +899,11 @@ function addSwipe(el,onLeft,onRight){
 addSwipe(document.getElementById('mMask'),()=>shiftMonth(1),()=>shiftMonth(-1));
 addSwipe(document.getElementById('dMask'),()=>shiftDay(1),()=>shiftDay(-1));
 
-[['ovAdd',closeAdd],['ovApo',closeApo]].forEach(([id,fn])=>{
-  document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)fn();});
-});
+document.getElementById('ovAdd').addEventListener('click',e=>{if(e.target.id==='ovAdd')closeAdd();});
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   if(document.getElementById('ovAdd').classList.contains('show'))closeAdd();
-  else if(document.getElementById('ovApo').classList.contains('show'))closeApo();
 });
-document.getElementById('convTime').addEventListener('input',runConv);
-document.getElementById('convTz').addEventListener('change',runConv);
 /* 改善スタジオや別タブで保存されたら取り込み直す（自分の変更で上書きしないため） */
 addEventListener('storage',e=>{
   if(e.key!==KEY)return;
@@ -1046,7 +912,7 @@ addEventListener('storage',e=>{
 
 applyTheme();
 setInterval(liveClocks,1000);liveClocks();
-renderLegend();renderChips();runConv();renderMonth();renderDay();
+renderLegend();renderChips();renderMonth();renderDay();
 /* manifest の shortcut から ?v=day などで直接ビューを開く */
 (function(){
   const v=new URLSearchParams(location.search).get('v');

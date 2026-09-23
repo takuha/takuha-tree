@@ -36,7 +36,7 @@ const DAYTYPE_NAME = { A: '平日', W: '週末' };
 
 /* ===== categories ===== */
 const CAT = {
-  fix:   { e: '🇪🇸', n: '授業／絶対', bar: '#159f76' },
+  fix:   { e: '📌', n: '絶対',        bar: '#159f76' },
   apo:   { e: '🤝', n: 'アポ',        bar: '#c9971c' },
   biz:   { e: '💰', n: 'ビジネス',    bar: '#0e7490' },
   work:  { e: '💼', n: '仕事',        bar: '#3b4fc0' },
@@ -53,34 +53,15 @@ const CAT = {
 };
 const catOf = k => CAT[k] || CAT.free;
 
-/* ===== いつもの時間割（2026-09-16〜：大阪基準・分は大阪の実時刻そのもの）
-   スペイン語授業終了（Máximo Nivel 2026-08-28卒業）に伴い作り直し。
-   平日は火だけ別枠にする理由がなくなったので type は A(平日)／W(週末)の2種類のみ。
-   ★2026-09-22訂正：青柳は本人が店に立つわけではない（現場はこうちゃん）ので
-   「18-24時 店に立つ」固定枠は廃止。夕方以降は固定枠を作らずフリーに戻した。 ===== */
+/* ===== いつもの時間割（2026-09-24〜：日本語のみ・必要な枠だけに整理）
+   平日/週末の2種類のみ。食事・就寝など当たり前の枠は削り、
+   実際に確保している作業時間だけを表示する。 ===== */
 function timeline(type) {
   if (type === 'A') return [
-    { g: 6 * 60,       t: '📲 SNS投稿確認＋撮影 ／ Revisar SNS + grabar', cat: 'sns' },
-    { g: 7 * 60,       t: '💪 筋トレ・散歩1h ／ Gym / caminata', cat: 'train' },
-    { g: 8 * 60,       t: '🍳 朝食・身支度 ／ Desayuno y arreglo', cat: 'meal' },
-    { g: 9 * 60,       t: '🤖 AI作業・案件対応 ／ Trabajo con IA', e: 12 * 60, cat: 'ai' },
-    { g: 12 * 60,      t: '🍴 ランチ ／ Almuerzo', cat: 'meal' },
-    { g: 13 * 60,      t: '🎬 編集・マーケ・SNS運用 ／ Edición + marketing', e: 17 * 60, cat: 'film' },
-    { g: 17 * 60,      t: '🆓 フリー ／ Libre', e: 19 * 60, cat: 'free' },
-    { g: 19 * 60,      t: '🍳 晩ごはん ／ Cena', cat: 'meal' },
-    { g: 20 * 60,      t: '🆓 フリー(何でも) ／ Libre', e: 22 * 60, cat: 'free' },
-    { g: 22 * 60,      t: '🪞 夜の振り返り(5分) ／ Reflexión', cat: 'self' },
-    { g: 22 * 60 + 30, t: '😴 就寝(22:30–6:00, 7.5h) ／ A dormir', cat: 'self' },
+    { g: 9 * 60,  t: '🤖 AI作業・案件対応', e: 12 * 60, cat: 'ai' },
+    { g: 13 * 60, t: '🎬 編集・マーケ・SNS運用', e: 17 * 60, cat: 'film' },
   ];
-  return [
-    { g: 7 * 60,  t: '🌅 ゆっくり起床・撮りだめ ／ Despertar tranquilo', cat: 'sns' },
-    { g: 10 * 60, t: '🎉 遊びに行く(観光・友達・用事) ／ Salir a divertirse', e: 14 * 60, cat: 'play' },
-    { g: 14 * 60, t: '🆓 フリー(休憩・何でも) ／ Libre', e: 16 * 60, cat: 'free' },
-    { g: 16 * 60, t: '🤖 AI作業(軽め・週の振り返り) ／ Trabajo con IA', e: 17 * 60, cat: 'ai' },
-    { g: 18 * 60, t: '🍽️ 晩ごはん ／ Cena', cat: 'meal' },
-    { g: 20 * 60, t: '🎬 週のまとめ編集を軽めに ／ Edición ligera', cat: 'film' },
-    { g: 22 * 60, t: '😴 しっかり休んで月曜リセット ／ Descansar', cat: 'self' },
-  ];
+  return [];
 }
 
 /* アポ枠: JP 11:00..13:30 の30分×6 = GT 20:00..22:30
