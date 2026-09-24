@@ -122,17 +122,16 @@
 
   /* ===== legend ===== */
   .legendcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-    padding:10px 13px;margin-bottom:12px;box-shadow:var(--shadow-s)}
-  .lg-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:2px 0}
-  .lg-title{font-size:12.5px;font-weight:800;color:var(--brand-ink)}
-  .lg-caret{font-size:11px;color:var(--mut);font-weight:800;transition:transform .2s var(--ease)}
+    padding:7px 11px;margin-bottom:10px;box-shadow:var(--shadow-s)}
+  .lg-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:1px 0}
+  .lg-title{font-size:11.5px;font-weight:800;color:var(--brand-ink)}
+  .lg-caret{font-size:10px;color:var(--mut);font-weight:800;transition:transform .2s var(--ease)}
   .lg-caret.open{transform:rotate(90deg)}
-  .lg-body{margin-top:10px}
+  .lg-body{margin-top:6px}
   .lg-body.hide{display:none}
-  .lg-sub{font-size:9.5px;font-weight:800;color:var(--mut);letter-spacing:.5px;margin:7px 0 5px}
-  .lg-row{display:flex;flex-wrap:wrap;gap:5px}
-  .lgchip{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:800;
-    padding:3px 9px;border-radius:var(--r-full);color:#fff;line-height:1.3;white-space:nowrap}
+  .lg-row{display:flex;flex-wrap:wrap;gap:4px}
+  .lgchip{display:inline-flex;align-items:center;gap:2px;font-size:9px;font-weight:800;
+    padding:2px 7px;border-radius:var(--r-full);color:#fff;line-height:1.25;white-space:nowrap}
   .lgchip.rt-A{color:var(--rt-a-ink);background:var(--rt-a-bg);border:1px dashed var(--rt-a-bd)}
   .lgchip.rt-B{color:var(--rt-b-ink);background:var(--rt-b-bg);border:1px dashed var(--rt-b-bd)}
   .lgchip.rt-W{color:var(--rt-w-ink);background:var(--rt-w-bg);border:1px dashed var(--rt-w-bd)}
@@ -331,10 +330,8 @@
         <span class="lg-caret" id="lgCaret" aria-hidden="true">▸</span>
       </button>
       <div class="lg-body hide" id="lgBody">
-        <div class="lg-sub">いつもの予定</div>
         <div class="lg-row" id="lgRoutine"></div>
-        <div class="lg-sub">予定の種類</div>
-        <div class="lg-row" id="lgCats"></div>
+        <div class="lg-row" id="lgCats" style="margin-top:4px"></div>
       </div>
     </div>
 
