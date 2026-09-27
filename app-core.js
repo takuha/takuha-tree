@@ -37,7 +37,7 @@ const DAYTYPE_NAME = { A: '平日', W: '週末' };
 /* ===== categories ===== */
 const CAT = {
   fix:   { e: '📌', n: '絶対',        bar: '#159f76' },
-  apo:   { e: '🤝', n: 'アポ',        bar: '#c9971c' },
+  apo:   { e: '🤝', n: 'アポ',        bar: '#dc2626' },
   biz:   { e: '💰', n: 'ビジネス',    bar: '#0e7490' },
   work:  { e: '💼', n: '仕事',        bar: '#3b4fc0' },
   study: { e: '📚', n: '勉強・自習',  bar: '#2f7fc0' },
