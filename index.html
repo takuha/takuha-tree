@@ -78,12 +78,12 @@
   .mcal-mask{overflow:hidden;position:relative;touch-action:pan-y}
   .mgrid{display:grid;grid-template-columns:repeat(7,1fr);
     /* 1fr にすると全行が一番忙しい日の高さに揃って間延びする */
-    grid-auto-rows:minmax(78px,auto);gap:4px}
+    grid-auto-rows:minmax(150px,auto);gap:4px}
   .mgrid.slideL{animation:slL .28s var(--ease)}
   .mgrid.slideR{animation:slR .28s var(--ease)}
   @keyframes slL{from{transform:translateX(26%);opacity:.3}to{transform:none;opacity:1}}
   @keyframes slR{from{transform:translateX(-26%);opacity:.3}to{transform:none;opacity:1}}
-  .cell{position:relative;min-height:78px;border-radius:var(--r-md);background:var(--surface);
+  .cell{position:relative;min-height:150px;border-radius:var(--r-md);background:var(--surface);
     border:1px solid var(--line-soft);padding:5px 5px 4px;overflow:hidden;text-align:left;
     display:flex;flex-direction:column;gap:2px;width:100%;color:inherit;
     transition:background .15s var(--ease),border-color .15s var(--ease)}
@@ -579,7 +579,7 @@ function renderMonth(dir){
       bars+=`<span class="spanbar${st?' st':''}${en?' en':''}${r.cat==='biz'?' biz':''}" style="background:${c.bar}">${label}</span>`;});
     if(DB.prefs.showRoutine){const ty=dayType(ds);
       bars+=`<span class="rbar rt-${ty}">${ROUTINE_LABEL[ty]}</span>`;}
-    const slots=Math.max(1,(DB.prefs.showRoutine?2:3)-rgs.length);
+    const slots=Math.max(1,(DB.prefs.showRoutine?7:8)-rgs.length);
     evs.slice(0,slots).forEach(e=>{const c=catOf(e.cat);
       bars+=`<span class="bar${e.apo?' apo':''}${e.cat==='biz'?' biz':''}${isDone(ds,e.k)?' done':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</span>`;});
     const more=evs.length>slots?`<span class="more">+${evs.length-slots}</span>`:'';
