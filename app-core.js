@@ -34,22 +34,15 @@ function daysBetween(a, b) {
 const ROUTINE_LABEL = { A: '💼平日', W: '🎉遊び' };
 const DAYTYPE_NAME = { A: '平日', W: '週末' };
 
-/* ===== categories ===== */
+/* ===== categories（2026-09-28〜：選べるのは6種類に整理） ===== */
 const CAT = {
-  fix:   { e: '📌', n: '絶対',        bar: '#159f76' },
-  apo:   { e: '🤝', n: 'アポ',        bar: '#dc2626' },
-  biz:   { e: '💰', n: 'ビジネス',    bar: '#0e7490' },
-  work:  { e: '💼', n: '仕事',        bar: '#3b4fc0' },
-  study: { e: '📚', n: '勉強・自習',  bar: '#2f7fc0' },
-  talk:  { e: '🗣️', n: '会話',        bar: '#c0417a' },
-  play:  { e: '🎉', n: '遊び',        bar: '#d0504d' },
-  ai:    { e: '🤖', n: 'AI作業',      bar: '#6a4fd0' },
-  film:  { e: '🎬', n: '撮影編集',    bar: '#c05a2e' },
-  sns:   { e: '📣', n: '発信',        bar: '#d07a1c' },
-  train: { e: '💪', n: 'トレ',        bar: '#5a9a2a' },
-  meal:  { e: '🍴', n: 'ごはん',      bar: '#8a6a42' },
-  free:  { e: '🆓', n: 'フリー',      bar: '#6b7280' },
-  self:  { e: '🪞', n: '内省',        bar: '#5a7a9a' },
+  fix:  { e: '📌', n: '絶対',      bar: '#159f76' },
+  apo:  { e: '🤝', n: 'アポ',      bar: '#dc2626' },
+  biz:  { e: '💰', n: 'ビジネス',  bar: '#0e7490' },
+  work: { e: '💼', n: '仕事',      bar: '#3b4fc0' },
+  play: { e: '🎉', n: '遊び',      bar: '#d0504d' },
+  meal: { e: '🍴', n: 'ごはん',    bar: '#8a6a42' },
+  free: { e: '🆓', n: 'フリー',    bar: '#6b7280' },
 };
 const catOf = k => CAT[k] || CAT.free;
 
@@ -58,8 +51,8 @@ const catOf = k => CAT[k] || CAT.free;
    実際に確保している作業時間だけを表示する。 ===== */
 function timeline(type) {
   if (type === 'A') return [
-    { g: 9 * 60,  t: '🤖 AI作業・案件対応', e: 12 * 60, cat: 'ai' },
-    { g: 13 * 60, t: '🎬 編集・マーケ・SNS運用', e: 17 * 60, cat: 'film' },
+    { g: 9 * 60,  t: '🤖 AI作業・案件対応', e: 12 * 60, cat: 'work' },
+    { g: 13 * 60, t: '🎬 編集・マーケ・SNS運用', e: 17 * 60, cat: 'work' },
   ];
   return [];
 }
