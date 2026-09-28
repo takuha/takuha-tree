@@ -24,7 +24,7 @@
      ============================================================ */
   .topbar{position:sticky;top:0;z-index:30;overflow:hidden;color:#fff;
     background:linear-gradient(140deg,var(--brand-deep) 0%,var(--brand) 62%,var(--brand-ink) 130%);
-    padding:calc(var(--safe-t) + 14px) 16px 14px;
+    padding:calc(var(--safe-t) + 10px) 16px 10px;
     border-bottom-left-radius:var(--r-xl);border-bottom-right-radius:var(--r-xl);
     box-shadow:var(--shadow-m)}
   .topbar::after{content:"";position:absolute;right:-30px;top:-40px;width:180px;height:180px;
@@ -40,11 +40,11 @@
     font-size:16px;display:flex;align-items:center;justify-content:center;color:#fff;
     transition:background .18s var(--ease)}
   .brand .themebtn:active{background:rgba(255,255,255,.3)}
-  .clocks{display:flex;gap:10px;align-items:stretch;margin-top:12px;position:relative;z-index:1}
+  .clocks{display:flex;gap:10px;align-items:stretch;margin-top:8px;position:relative;z-index:1}
   .clock{flex:1;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
-    border-radius:var(--r-lg);padding:8px 10px;text-align:center;backdrop-filter:blur(6px)}
+    border-radius:var(--r-lg);padding:5px 10px;text-align:center;backdrop-filter:blur(6px)}
   .clock .lab{font-size:10px;opacity:.92;letter-spacing:.4px;font-weight:700}
-  .clock .t{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2;letter-spacing:-.5px}
+  .clock .t{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2;letter-spacing:-.5px}
   .clock .d{font-size:10px;opacity:.86}
 
   /* ============================================================
@@ -78,12 +78,12 @@
   .mcal-mask{overflow:hidden;position:relative;touch-action:pan-y}
   .mgrid{display:grid;grid-template-columns:repeat(7,1fr);
     /* 1fr にすると全行が一番忙しい日の高さに揃って間延びする */
-    grid-auto-rows:minmax(150px,auto);gap:4px}
+    grid-auto-rows:minmax(80px,auto);gap:3px}
   .mgrid.slideL{animation:slL .28s var(--ease)}
   .mgrid.slideR{animation:slR .28s var(--ease)}
   @keyframes slL{from{transform:translateX(26%);opacity:.3}to{transform:none;opacity:1}}
   @keyframes slR{from{transform:translateX(-26%);opacity:.3}to{transform:none;opacity:1}}
-  .cell{position:relative;min-height:150px;border-radius:var(--r-md);background:var(--surface);
+  .cell{position:relative;min-height:80px;border-radius:var(--r-md);background:var(--surface);
     border:1px solid var(--line-soft);padding:5px 5px 4px;overflow:hidden;text-align:left;
     display:flex;flex-direction:column;gap:2px;width:100%;color:inherit;
     transition:background .15s var(--ease),border-color .15s var(--ease)}
@@ -94,7 +94,7 @@
   .cell.today .dn{background:var(--brand);color:var(--brand-on);border-radius:var(--r-sm);
     align-self:flex-start;padding:2px 7px}
   .cell.sel{background:var(--surface-2);border-color:var(--brand-ink)}
-  .cell .bars{display:flex;flex-direction:column;gap:2px}
+  .cell .bars{display:flex;flex-direction:column;gap:1px}
   /* 期間予定：日をまたいでセル端まで繋がる帯 */
   .spanbar{font-size:8.5px;font-weight:800;line-height:1.4;padding:2px 3px;color:#fff;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.3px;
@@ -104,20 +104,20 @@
   .spanbar.en{margin-right:0;width:calc(100% + 6px);
     border-top-right-radius:var(--r-sm);border-bottom-right-radius:var(--r-sm)}
   .spanbar.st.en{width:100%}
-  .bar{font-size:8.5px;font-weight:700;line-height:1.3;border-radius:5px;padding:1.5px 4px;
+  .bar{font-size:8px;font-weight:700;line-height:1.15;border-radius:4px;padding:1px 4px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;letter-spacing:-.3px}
   .bar.apo{box-shadow:0 0 0 1px rgba(255,255,255,.3) inset}
   .bar.done{opacity:.45}
   .bar.biz,.spanbar.biz{box-shadow:0 0 0 1.5px #ffd166 inset}
   .cell .bizmark{position:absolute;top:4px;right:5px;font-size:10px;line-height:1;
     filter:drop-shadow(0 0 1px rgba(0,0,0,.5))}
-  .rbar{font-size:8px;font-weight:800;line-height:1.35;border-radius:5px;padding:1.5px 4px;
+  .rbar{font-size:7.5px;font-weight:800;line-height:1.15;border-radius:4px;padding:1px 4px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px dashed;letter-spacing:-.3px}
   .rbar.rt-A{color:var(--rt-a-ink);background:var(--rt-a-bg);border-color:var(--rt-a-bd)}
   .rbar.rt-B{color:var(--rt-b-ink);background:var(--rt-b-bg);border-color:var(--rt-b-bd)}
   .rbar.rt-W{color:var(--rt-w-ink);background:var(--rt-w-bg);border-color:var(--rt-w-bd)}
   .cell .more{font-size:8px;color:var(--mut);font-weight:800;padding-left:4px}
-  .mhint{font-size:11px;color:var(--mut);text-align:center;margin-top:12px;line-height:1.7}
+  .mhint{font-size:11px;color:var(--mut);text-align:center;margin-top:6px;line-height:1.5}
   .mhint .lnk{color:var(--brand-ink);font-weight:800;text-decoration:underline;text-underline-offset:2px}
 
   /* ===== legend ===== */
@@ -579,7 +579,7 @@ function renderMonth(dir){
       bars+=`<span class="spanbar${st?' st':''}${en?' en':''}${r.cat==='biz'?' biz':''}" style="background:${c.bar}">${label}</span>`;});
     if(DB.prefs.showRoutine){const ty=dayType(ds);
       bars+=`<span class="rbar rt-${ty}">${ROUTINE_LABEL[ty]}</span>`;}
-    const slots=Math.max(1,(DB.prefs.showRoutine?7:8)-rgs.length);
+    const slots=Math.max(1,(DB.prefs.showRoutine?2:3)-rgs.length);
     evs.slice(0,slots).forEach(e=>{const c=catOf(e.cat);
       bars+=`<span class="bar${e.apo?' apo':''}${e.cat==='biz'?' biz':''}${isDone(ds,e.k)?' done':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</span>`;});
     const more=evs.length>slots?`<span class="more">+${evs.length-slots}</span>`:'';
