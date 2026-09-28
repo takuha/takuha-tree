@@ -295,6 +295,11 @@
     padding:11px 18px;border-radius:var(--r-full);font-size:12.5px;font-weight:800;
     box-shadow:var(--shadow-m);opacity:0;pointer-events:none;transition:.26s var(--ease);max-width:90vw}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .updatebar{position:fixed;left:12px;right:12px;top:calc(var(--safe-t) + 8px);z-index:90;
+    background:var(--brand);color:var(--brand-on);border:none;border-radius:var(--r-full);
+    padding:10px 16px;font-size:12.5px;font-weight:800;box-shadow:var(--shadow-m);
+    text-align:center;width:auto}
+  .updatebar[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -426,6 +431,19 @@
   <button id="n-tools" onclick="showView('tools')"><span class="i" aria-hidden="true">🔧</span>ツール</button>
 </nav>
 
+<!-- ===== DAY PEEK SHEET（月カレンダーの「+N」をその場で展開） ===== -->
+<div class="ov" id="ovPeek" role="dialog" aria-modal="true" aria-labelledby="peekTitle">
+  <div class="sheet">
+    <div class="grip"></div>
+    <h3 id="peekTitle"></h3>
+    <div id="peekList"></div>
+    <div class="acts">
+      <button class="cancel" onclick="closePeek()">閉じる</button>
+      <button class="save" id="peekDayBtn" onclick="">日ビューを開く</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== ADD / EDIT SHEET ===== -->
 <div class="ov" id="ovAdd" role="dialog" aria-modal="true" aria-labelledby="addTitle">
   <div class="sheet">
@@ -472,6 +490,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<button type="button" class="updatebar" id="updateBar" onclick="location.reload()" hidden>🔄 新しい版があります・タップで更新</button>
 
 <script src="app-core.js"></script>
 <script>
@@ -582,7 +601,7 @@ function renderMonth(dir){
     const slots=Math.max(1,(DB.prefs.showRoutine?2:3)-rgs.length);
     evs.slice(0,slots).forEach(e=>{const c=catOf(e.cat);
       bars+=`<span class="bar${e.apo?' apo':''}${e.cat==='biz'?' biz':''}${isDone(ds,e.k)?' done':''}" style="background:${c.bar}">${e.apo?'🤝':''}${esc(e.t)}</span>`;});
-    const more=evs.length>slots?`<span class="more">+${evs.length-slots}</span>`:'';
+    const more=evs.length>slots?`<span type="button" class="more" onclick="event.stopPropagation();openPeek('${ds}')">+${evs.length-slots}</span>`:'';
     const hasBiz=evs.some(e=>e.cat==='biz')||rgs.some(r=>r.cat==='biz');
     h+=`<button type="button" class="${cls}" onclick="openDay('${ds}')" aria-label="${mYM.m+1}月${d}日">
       <span class="dn">${d}</span>${hasBiz?'<span class="bizmark">💰</span>':''}
@@ -611,6 +630,29 @@ function applyLegendOpen(){
 }
 function toggleLegend(){DB.prefs.legendOpen=!DB.prefs.legendOpen;save();applyLegendOpen();}
 function openDay(ds){SEL=ds;showView('day');}
+function openPeek(ds){
+  const[y,mo,d]=ds.split('-').map(Number);
+  document.getElementById('peekTitle').textContent=`${mo}/${d} (${WKJ[dow(ds)]}) の予定`;
+  const rgs=rangesFor(ds);
+  const evs=eventsForBars(ds).sort((a,b)=>a.g-b.g);
+  let h='';
+  rgs.forEach(r=>{const c=catOf(r.cat);
+    h+=`<button type="button" class="fitem" onclick="closePeek();openEditRange('${r.id}')">
+      <span class="fbar" style="background:${c.bar}"></span>
+      <span class="ft"><div class="j">終日</div></span>
+      <span class="fb"><span class="t">${esc(r.title)}</span><br>
+        <span class="cpill" style="background:${c.bar}">${c.e}${c.n}</span></span></button>`;});
+  evs.forEach(e=>{const c=catOf(e.cat);
+    h+=`<button type="button" class="fitem" onclick="closePeek();openDay('${ds}')">
+      <span class="fbar" style="background:${c.bar}"></span>
+      <span class="ft"><div class="j">${m2hm(e.g)}</div></span>
+      <span class="fb"><span class="t">${esc(e.t)}</span><br>
+        <span class="cpill" style="background:${c.bar}">${c.e}${c.n}</span></span></button>`;});
+  document.getElementById('peekList').innerHTML=h||'<div class="feed-empty">予定はありません</div>';
+  document.getElementById('peekDayBtn').onclick=()=>{closePeek();openDay(ds);};
+  document.getElementById('ovPeek').classList.add('show');
+}
+function closePeek(){document.getElementById('ovPeek').classList.remove('show');}
 function toggleRoutine(){DB.prefs.showRoutine=!DB.prefs.showRoutine;save();renderMonth();}
 
 /* ============================================================
@@ -897,9 +939,11 @@ addSwipe(document.getElementById('mMask'),()=>shiftMonth(1),()=>shiftMonth(-1));
 addSwipe(document.getElementById('dMask'),()=>shiftDay(1),()=>shiftDay(-1));
 
 document.getElementById('ovAdd').addEventListener('click',e=>{if(e.target.id==='ovAdd')closeAdd();});
+document.getElementById('ovPeek').addEventListener('click',e=>{if(e.target.id==='ovPeek')closePeek();});
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   if(document.getElementById('ovAdd').classList.contains('show'))closeAdd();
+  else if(document.getElementById('ovPeek').classList.contains('show'))closePeek();
 });
 /* 改善スタジオや別タブで保存されたら取り込み直す（自分の変更で上書きしないため） */
 addEventListener('storage',e=>{
@@ -941,8 +985,15 @@ if('serviceWorker' in navigator){
         const w=reg.installing;
         if(!w)return;
         w.addEventListener('statechange',()=>{
-          if(w.state==='installed'&&navigator.serviceWorker.controller)toast('新しい版があります。閉じて開き直してね');
+          if(w.state==='installed'&&navigator.serviceWorker.controller){
+            const b=document.getElementById('updateBar');
+            if(b)b.hidden=false;
+          }
         });
+      });
+      /* タブを開きっぱなしでも気づけるように、フォアグラウンド復帰時にも確認 */
+      document.addEventListener('visibilitychange',()=>{
+        if(document.visibilityState==='visible')reg.update().catch(()=>{});
       });
     }).catch(()=>{});
   });
