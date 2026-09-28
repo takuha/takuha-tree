@@ -100,6 +100,7 @@ function normalizeDB() {
   if (p.theme === undefined) p.theme = 'auto';
   if (p.accent === undefined) p.accent = 'tree';
   if (p.feedFilter === undefined) p.feedFilter = 'all';
+  if (p.monthFilter === undefined) p.monthFilter = 'all';
 }
 normalizeDB();
 

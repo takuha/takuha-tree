@@ -24,7 +24,7 @@
      ============================================================ */
   .topbar{position:sticky;top:0;z-index:30;overflow:hidden;color:#fff;
     background:linear-gradient(140deg,var(--brand-deep) 0%,var(--brand) 62%,var(--brand-ink) 130%);
-    padding:calc(var(--safe-t) + 10px) 16px 10px;
+    padding:calc(var(--safe-t) + 8px) 16px 8px;
     border-bottom-left-radius:var(--r-xl);border-bottom-right-radius:var(--r-xl);
     box-shadow:var(--shadow-m)}
   .topbar::after{content:"";position:absolute;right:-30px;top:-40px;width:180px;height:180px;
@@ -61,7 +61,7 @@
   .card h2 .badge{margin-left:auto;font-size:10.5px;font-weight:700;color:var(--mut)}
 
   /* ===== month ===== */
-  .mhead{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .mhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
   .iconbtn{background:var(--surface);color:var(--brand-ink);border:1px solid var(--line);
     border-radius:var(--r-md);width:44px;height:44px;font-size:20px;box-shadow:var(--shadow-s);
     display:flex;align-items:center;justify-content:center;transition:transform .12s var(--ease)}
@@ -72,13 +72,13 @@
     border-radius:var(--r-full);height:44px;padding:0 14px;font-size:12px;font-weight:800;
     box-shadow:var(--shadow-s);white-space:nowrap}
 
-  .wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+  .wd{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:3px}
   .wd span{text-align:center;font-size:10px;color:var(--mut);font-weight:800;padding:2px 0;letter-spacing:.3px}
   .wd span.s0{color:var(--sun)}.wd span.s6{color:var(--sat)}
   .mcal-mask{overflow:hidden;position:relative;touch-action:pan-y}
   .mgrid{display:grid;grid-template-columns:repeat(7,1fr);
     /* 1fr にすると全行が一番忙しい日の高さに揃って間延びする */
-    grid-auto-rows:minmax(80px,auto);gap:3px}
+    grid-auto-rows:minmax(80px,auto);gap:2px}
   .mgrid.slideL{animation:slL .28s var(--ease)}
   .mgrid.slideR{animation:slR .28s var(--ease)}
   @keyframes slL{from{transform:translateX(26%);opacity:.3}to{transform:none;opacity:1}}
@@ -117,12 +117,12 @@
   .rbar.rt-B{color:var(--rt-b-ink);background:var(--rt-b-bg);border-color:var(--rt-b-bd)}
   .rbar.rt-W{color:var(--rt-w-ink);background:var(--rt-w-bg);border-color:var(--rt-w-bd)}
   .cell .more{font-size:8px;color:var(--mut);font-weight:800;padding-left:4px}
-  .mhint{font-size:11px;color:var(--mut);text-align:center;margin-top:6px;line-height:1.5}
+  .mhint{font-size:10.5px;color:var(--mut);text-align:center;margin-top:2px;line-height:1.35}
   .mhint .lnk{color:var(--brand-ink);font-weight:800;text-decoration:underline;text-underline-offset:2px}
 
   /* ===== legend ===== */
   .legendcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-    padding:7px 11px;margin-bottom:10px;box-shadow:var(--shadow-s)}
+    padding:5px 11px;margin-bottom:6px;box-shadow:var(--shadow-s)}
   .lg-head{display:flex;align-items:center;justify-content:space-between;width:100%;padding:1px 0}
   .lg-title{font-size:11.5px;font-weight:800;color:var(--brand-ink)}
   .lg-caret{font-size:10px;color:var(--mut);font-weight:800;transition:transform .2s var(--ease)}
@@ -345,6 +345,10 @@
       </div>
     </div>
 
+    <div class="seg" role="group" aria-label="月の表示の絞り込み" style="margin-bottom:2px;padding:2px">
+      <button id="month-all" onclick="setMonthFilter('all')" style="height:26px;font-size:11px">すべて</button>
+      <button id="month-apo" onclick="setMonthFilter('apo')" style="height:26px;font-size:11px">🤝 アポのみ</button>
+    </div>
     <div class="wd" id="wdRow"></div>
     <div class="mcal-mask" id="mMask">
       <div class="mgrid" id="mGrid"></div>
@@ -575,7 +579,15 @@ function eventsForBars(ds){
   (DB.events[ds]||[]).forEach(e=>out.push({g:e.gt,cat:e.cat||'free',t:e.title,apo:false,k:'e'+e.id}));
   return out.sort((a,b)=>a.g-b.g);
 }
+function setMonthFilter(f){DB.prefs.monthFilter=f;save();renderMonth();}
+function applyMonthFilterUI(){
+  const f=DB.prefs.monthFilter||'all';
+  const a=document.getElementById('month-all'),b=document.getElementById('month-apo');
+  if(a)a.classList.toggle('on',f==='all');
+  if(b)b.classList.toggle('on',f==='apo');
+}
 function renderMonth(dir){
+  applyMonthFilterUI();
   document.getElementById('wdRow').innerHTML=WKJ.map((w,i)=>`<span class="s${i}">${w}</span>`).join('');
   document.getElementById('mLabel').textContent=(mYM.m+1)+'月';
   document.getElementById('mYear').textContent=mYM.y;
@@ -592,17 +604,20 @@ function renderMonth(dir){
     let cls='cell'+(w===0?' s0':w===6?' s6':'');
     if(ds===today)cls+=' today';
     if(ds===SEL)cls+=' sel';
-    const evs=eventsForBars(ds);
+    const apoOnly=DB.prefs.monthFilter==='apo';
+    let evs=eventsForBars(ds);
+    if(apoOnly)evs=evs.filter(e=>e.cat==='apo');
     /* ビジネス予定は枠から溢れて「+N」に隠れないよう常に先頭優先で表示 */
     evs.sort((a,b)=>((a.cat==='biz')===(b.cat==='biz'))?a.g-b.g:(a.cat==='biz'?-1:1));
     let bars='';
-    const rgs=rangesFor(ds);
+    let rgs=rangesFor(ds);
+    if(apoOnly)rgs=rgs.filter(r=>r.cat==='apo');
     rgs.forEach(r=>{const c=catOf(r.cat);
       const st=ds===r.start,en=ds===r.end;
       /* 週頭・月頭でもタイトルを出し直す（帯が長いときに何の予定か分かるように） */
       const label=(st||w===0||d===1)?esc(r.title):'&nbsp;';
       bars+=`<span class="spanbar${st?' st':''}${en?' en':''}${r.cat==='biz'?' biz':''}" style="background:${c.bar}">${label}</span>`;});
-    if(DB.prefs.showRoutine){const ty=dayType(ds);
+    if(DB.prefs.showRoutine&&!apoOnly){const ty=dayType(ds);
       bars+=`<span class="rbar rt-${ty}">${ROUTINE_LABEL[ty]}</span>`;}
     const slots=Math.max(1,(DB.prefs.showRoutine?2:3)-rgs.length);
     evs.slice(0,slots).forEach(e=>{const c=catOf(e.cat);
