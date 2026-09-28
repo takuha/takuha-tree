@@ -157,6 +157,11 @@
   .prog .fill{height:100%;border-radius:var(--r-full);
     background:linear-gradient(90deg,var(--brand-deep),var(--brand));transition:width .35s var(--ease)}
   .prog .pct{font-size:11px;font-weight:800;color:var(--brand-ink);font-variant-numeric:tabular-nums;min-width:74px;text-align:right}
+  .speakbtn{flex:0 0 auto;width:30px;height:30px;border-radius:var(--r-full);border:1.5px solid var(--line);
+    background:var(--surface-2);font-size:14px;display:flex;align-items:center;justify-content:center;
+    color:var(--brand-ink);transition:.15s var(--ease)}
+  .speakbtn.on{background:var(--brand);border-color:var(--brand);color:var(--brand-on)}
+  .speakbtn:active{transform:scale(.9)}
 
   /* timeline */
   .tl .row{display:flex;gap:11px;align-items:flex-start;padding:10px 0;
@@ -368,6 +373,7 @@
         <div class="prog">
           <div class="track"><div class="fill" id="progFill" style="width:0%"></div></div>
           <span class="pct" id="progPct">0 / 0 完了</span>
+          <button type="button" class="speakbtn" id="speakBtn" onclick="speakDay()" aria-label="この日の予定を読み上げ">🔊</button>
         </div>
         <div class="tl" id="timeline"></div>
       </div>
@@ -711,6 +717,29 @@ function renderTimeline(){
   const pct=all.length?Math.round(doneN/all.length*100):0;
   document.getElementById('progFill').style.width=pct+'%';
   document.getElementById('progPct').textContent=`${doneN} / ${all.length} 完了`;
+}
+
+/* ============================================================
+   read aloud（読み上げ・Web Speech API・iPhone Safariでも動く）
+   ============================================================ */
+function speakDay(){
+  const btn=document.getElementById('speakBtn');
+  if(!('speechSynthesis' in window)){toast('この端末は読み上げに対応していません');return;}
+  if(speechSynthesis.speaking){speechSynthesis.cancel();btn.classList.remove('on');return;}
+  const[y,mo,d]=SEL.split('-').map(Number);
+  const rgs=rangesFor(SEL);
+  const type=dayType(SEL);
+  const evs=timeline(type).concat((DB.events[SEL]||[]).map(e=>({g:e.gt,t:e.title,cat:e.cat||'free'})))
+    .sort((a,b)=>a.g-b.g);
+  let parts=[`${mo}月${d}日の予定です。`];
+  rgs.forEach(r=>parts.push(`終日、${r.title}。`));
+  if(!evs.length&&!rgs.length)parts.push('予定はありません。');
+  evs.forEach(e=>parts.push(`${m2hm(e.g).replace(':','時')}分、${e.t}。`));
+  const u=new SpeechSynthesisUtterance(parts.join(''));
+  u.lang='ja-JP';u.rate=1.05;
+  u.onstart=()=>btn.classList.add('on');
+  u.onend=u.onerror=()=>btn.classList.remove('on');
+  speechSynthesis.cancel();speechSynthesis.speak(u);
 }
 
 /* ============================================================

@@ -15,19 +15,12 @@ SYNC_PATH = os.path.join(REPO_DIR, "sync.json")
 NTFY_TOPIC = "takuha-aichan-3fcb886f2fa7"
 
 CAT_KEYS = {
-    "apo": "アポ・人との約束",
+    "apo": "アポ・人との約束・打ち合わせ",
     "biz": "ビジネス案件(内園くん協業・証券口座代理店・エコウォーター等の不定期案件)",
-    "work": "仕事全般",
-    "study": "勉強・自習",
-    "talk": "会話",
-    "play": "遊び・旅行",
-    "ai": "AI作業",
-    "film": "撮影編集",
-    "sns": "発信",
-    "train": "トレーニング",
+    "work": "仕事全般(AI作業・撮影編集・発信・勉強・会話含む)",
+    "play": "遊び・旅行・トレーニング",
     "meal": "ごはん",
     "free": "フリー・特に分類不要なもの",
-    "self": "内省",
 }
 
 
@@ -95,10 +88,10 @@ timeが不明な場合は"09:00"、dur_minが不明な場合は60を使う。tit
     return json.loads(raw)
 
 
-def jp_time_to_gt(hhmm):
+def hhmm_to_min(hhmm):
+    """TIMのgtは2026-09-16の時差廃止以降、日本の実時刻(分)をそのまま持つ。変換不要。"""
     h, m = map(int, hhmm.split(":"))
-    jp_min = h * 60 + m
-    return ((jp_min - 900) % 1440 + 1440) % 1440
+    return h * 60 + m
 
 
 def run_git(args, check=True):
@@ -147,7 +140,7 @@ def main():
                 continue
             time_str = item.get("time") or "09:00"
             dur = int(item.get("dur_min") or 60)
-            gt = jp_time_to_gt(time_str)
+            gt = hhmm_to_min(time_str)
             eid = f"e{date.replace('-', '')}-voice{stamp}{idx}"
             db.setdefault("events", {}).setdefault(date, []).append(
                 {"id": eid, "title": title, "gt": gt, "dur": dur, "cat": cat}
