@@ -37,6 +37,7 @@ const DAYTYPE_NAME = { A: '平日', W: '週末' };
 /* ===== categories（2026-09-28〜：選べるのは6種類に整理） ===== */
 const CAT = {
   fix:  { e: '📌', n: '絶対',      bar: '#159f76' },
+  kai:  { e: '🍲', n: '青柳の会',  bar: '#ec4899' },
   apo:  { e: '🤝', n: 'アポ',      bar: '#dc2626' },
   biz:  { e: '💰', n: 'ビジネス',  bar: '#0e7490' },
   work: { e: '💼', n: '仕事',      bar: '#3b4fc0' },
