@@ -1139,6 +1139,14 @@ function mergeInto(d){
     DB.appts[ds]=Object.assign(DB.appts[ds]||{},slots||{});});
   Object.entries(d.done||{}).forEach(([ds,marks])=>{
     DB.done[ds]=Object.assign(DB.done[ds]||{},marks||{});});
+  /* sync.json の deleted＝消した予定のid一覧。端末に残っている同じidも消す */
+  const del=new Set((d.deleted||[]).map(String));
+  if(del.size){
+    Object.keys(DB.events).forEach(ds=>{
+      DB.events[ds]=DB.events[ds].filter(x=>!del.has(String(x.id)));
+      if(!DB.events[ds].length)delete DB.events[ds];});
+    DB.ranges=DB.ranges.filter(x=>!del.has(String(x.id)));
+  }
 }
 function hasAnyData(){
   return DB.ranges.length||Object.keys(DB.events).length
