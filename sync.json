@@ -983,13 +983,6 @@
     "cat": "biz"
    },
    {
-    "id": "e2026-1031-hosson",
-    "title": "💰 ほっそん ロードマップ見直し日",
-    "gt": 540,
-    "dur": 30,
-    "cat": "biz"
-   },
-   {
     "id": "e2026-1031-kanemura-nyukin",
     "title": "💰 期限：かねむらさんへ入金（8月・9月分 AD01 各1本／「10月中に入金」と返答済み）",
     "gt": 540,
@@ -1319,6 +1312,7 @@
  "appts": {},
  "done": {},
  "deleted": [
+  "e2026-1031-hosson",
   "e2026-1107-agukai",
   "e2026-1108-agushabukon",
   "e2026-1116-kuchikomi185",
