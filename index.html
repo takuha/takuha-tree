@@ -1147,6 +1147,12 @@ function mergeInto(d){
       if(!DB.events[ds].length)delete DB.events[ds];});
     DB.ranges=DB.ranges.filter(x=>!del.has(String(x.id)));
   }
+  /* sync.json の prefsOnce＝表示設定を端末ごとに1回だけ上書き（あとで本人がアプリで戻せる） */
+  const po=d.prefsOnce;
+  if(po&&po.id&&DB.prefs.prefsOnceId!==po.id){
+    Object.entries(po).forEach(([k,v])=>{if(k!=='id')DB.prefs[k]=v;});
+    DB.prefs.prefsOnceId=po.id;
+  }
 }
 function hasAnyData(){
   return DB.ranges.length||Object.keys(DB.events).length
