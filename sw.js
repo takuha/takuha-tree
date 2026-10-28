@@ -3,7 +3,7 @@
      HTML・sync.json … network-first（更新を取りこぼさない。オフライン時だけキャッシュ）
      その他 … cache-first（アイコン等は変わらないので速さ優先）
    キャッシュ名の版を上げると古いキャッシュは activate 時に消える。 */
-const VERSION = 'tim-v15';
+const VERSION = 'tim-v16';
 const SHELL = [
   './',
   './index.html',
@@ -20,8 +20,9 @@ const SHELL = [
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
     const c = await caches.open(VERSION);
-    /* 1本でも 404 だと addAll がまるごと失敗するので個別に入れる */
-    await Promise.all(SHELL.map(u => c.add(u).catch(() => {})));
+    /* 1本でも 404 だと addAll がまるごと失敗するので個別に入れる。
+       cache:'reload'＝ブラウザ側の古いコピーではなく必ずサーバーから取る（版を上げても旧app-core.jsが残った事故の対策） */
+    await Promise.all(SHELL.map(u => c.add(new Request(u, { cache: 'reload' })).catch(() => {})));
     self.skipWaiting();
   })());
 });
