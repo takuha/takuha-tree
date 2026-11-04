@@ -1157,15 +1157,6 @@
         "cat": "play"
       }
     ],
-    "2026-11-11": [
-      {
-        "id": "e2026-1111-agukai-boshu",
-        "title": "🍲 AGU会 1並びで乾杯の会（青柳 19:00〜21:00・主催募集中・未確定）",
-        "gt": 1140,
-        "dur": 120,
-        "cat": "kai"
-      }
-    ],
     "2026-11-13": [
       {
         "id": "e2026-1113-agukai",
@@ -1574,7 +1565,8 @@
     "r2026-1105-aoyagi17",
     "r2026-1110-niimi",
     "r2026-1120-cambodia",
-    "e2026-1128-agukai-boshu"
+    "e2026-1128-agukai-boshu",
+    "e2026-1111-agukai-boshu"
   ],
   "prefsOnce": {
     "id": "2026-10-28-routine-off",
