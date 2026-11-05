@@ -1,0 +1,50 @@
+name: Deploy TIM (Pages + tim.ics)
+
+# main に push されるたび（音声追加ワークフローが sync.json を更新したときも）に、
+# サイト一式と sync.json から作った tim.ics を GitHub Pages に公開する。
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: ["Add schedule from voice"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build site
+        run: |
+          mkdir _site
+          rsync -a --exclude '.git' --exclude '.github' --exclude '.claude' --exclude '_site' --exclude '.DS_Store' ./ _site/
+          python3 scripts/build_ics.py sync.json _site/tim.ics
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
