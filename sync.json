@@ -1139,13 +1139,6 @@
     "gt": 540,
     "dur": 15,
     "cat": "biz"
-   },
-   {
-    "id": "e2026-1109-dancebu-koekake",
-    "title": "🕺 ダンス部グループLINEに声かけ（調整さん締切は明日11/10・まだの人へ）",
-    "gt": 1200,
-    "dur": 10,
-    "cat": "play"
    }
   ],
   "2026-11-10": [
@@ -1587,7 +1580,8 @@
   "r2026-1110-niimi",
   "r2026-1120-cambodia",
   "e2026-1128-agukai-boshu",
-  "e2026-1111-agukai-boshu"
+  "e2026-1111-agukai-boshu",
+  "e2026-1109-dancebu-koekake"
  ],
  "prefsOnce": {
   "id": "2026-10-28-routine-off",
